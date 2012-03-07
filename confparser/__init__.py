@@ -13,9 +13,6 @@ class confparser:
 		except Exception as e:
 			raise Exception("Error getting %s. Reason: %s" % (self.db,e))
 
-	def gen_hex(self, pw):
-		return sha1(pw).hexdigest()
-
 	def section_exists(self, section):
 		if self.conf.has_section(section):
 			return True

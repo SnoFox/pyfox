@@ -1,6 +1,8 @@
 # Copyright (C) David B. Dixon II 2012
+# IRC module
 
 import asyncore
+import socket
 
 class newClient(asyncore.dispatcher):
 	# Let's make everything overly complicated! Not...
@@ -69,18 +71,14 @@ class newClient(asyncore.dispatcher):
 		else:
 			for line in data.split('\r\n'):
 				if line != '':
-					original = line
+					print line
+
 					line = [q for q in line.split(' ') if q != '']
 
 					if line[0] == 'PING':
 						self.push('PONG %s' % line[1])
 
-					else:
-						print line
-
 	def handle_check(self):
-		# Used to keep our connection to the network.
-
 		while True:
 			if self.pings == None:
 				# Something quit the process. Stop the cycle.
@@ -112,3 +110,10 @@ class newClient(asyncore.dispatcher):
 
 	def notice(self, location, line):
 		self.push('NOTICE %s :%s' % (location, line))
+
+def loop():
+    while True:
+        if len(asyncore.socket_map) == 0:
+            time.sleep(1)
+        else:
+             asyncore.poll(1)
