@@ -36,11 +36,12 @@ def main():
 		sparks.newClient(server)
 
 	# Fork Background Stolen from Skyakdar! Thank you dKingston
+	# PROTIP: This might not work.... 
 	if '-bg' in argv:
 		try:
 			pid = os.fork()
 		except OSError as e:
-			print((e.errno, e.strerror))
+			print e.errno, e.strerror
 	
 		# This is the child process.
 		if pid == 0:
@@ -51,7 +52,7 @@ def main():
 			try:
 				pid = os.fork()
 			except OSError as e:
-				print((e.errno, e.strerror))
+				print e.errno, e.strerror
 	
 			# This is the second child process.
 			if pid == 0:
@@ -60,7 +61,7 @@ def main():
 
 			# This is the first child.
 			else:
-				print ('Running dbbot in background mode [%s] (%s)' % (pid, os.getcwd()))
+				print 'Running dbbot in background mode [%s] (%s)' % (pid, os.getcwd())
 				os._exit(0)
 		else:
 			os._exit(0)
