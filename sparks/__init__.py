@@ -80,6 +80,9 @@ class newClient(asyncore.dispatcher):
 					if line[0] == 'PING':
 						self.push('PONG %s' % line[1])
 
+					elif line[1] == 'PONG':
+						self.ping -= 1
+
 	def handle_check(self):
 		while True:
 			if self.pings == None:
