@@ -3,6 +3,7 @@
 
 import asyncore
 import socket
+from time import sleep
 
 class newClient(asyncore.dispatcher):
 	# Let's make everything overly complicated! Not...
@@ -114,6 +115,6 @@ class newClient(asyncore.dispatcher):
 def loop():
     while True:
         if len(asyncore.socket_map) == 0:
-            time.sleep(1)
+            sleep(1)
         else:
-             asyncore.poll(1)
+            asyncore.poll(1)
