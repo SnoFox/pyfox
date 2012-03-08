@@ -53,8 +53,5 @@ class confparser:
 	def add_section(self, section):
 		self.conf.add_section(section)
 
-	def set(self, section, option, value, encrypt=None):
-		if encrypt:
-			self.conf.set(section, option, self.gen_hex(value))
-		else:
-			self.conf.set(section, option, value)
+	def set(self, section, option, value):
+		self.conf.set(section, option, value)
