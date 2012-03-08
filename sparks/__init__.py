@@ -16,7 +16,7 @@ class newClient(asyncore.dispatcher):
 		self.config = config
 		self.received = None
 		self.buffer = []
-		self.pings = 0
+		self.hang = 0
 
 		self.cl = {}
 
@@ -85,18 +85,18 @@ class newClient(asyncore.dispatcher):
 
 	def handle_check(self):
 		while True:
-			if self.pings == None:
+			if self.hang == None:
 				# Something quit the process. Stop the cycle.
 				break
 
-			elif self.pings == 11:
+			elif self.hang == 11:
 				# We're no longer here....
 				self.handle_close()
 				break
 
 			else:
 				self.push('PING %s' % int(time()))
-				self.pings += 1
+				self.hang += 1
 				sleep(25)
 
 	def handle_error(self):
