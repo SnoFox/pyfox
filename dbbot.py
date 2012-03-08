@@ -1,5 +1,6 @@
 # Copyright (C) David B. Dixon II 2012
 import sparks
+import modules
 
 import signal
 import os
