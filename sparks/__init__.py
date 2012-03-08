@@ -3,7 +3,8 @@
 
 import asyncore
 import socket
-from time import sleep
+from time import sleep, time
+from thread import start_new_thread as threader
 
 class newClient(asyncore.dispatcher):
 	# Let's make everything overly complicated! Not...
@@ -32,8 +33,8 @@ class newClient(asyncore.dispatcher):
 		self.push('NICK %s' % self.config['nick'])
 		self.push('USER %s 0 0 :dbbot written by dbdii407' % self.config['nick'])
 
-		# Something tells me this is Python3...
-		# threader(self.handle_check, ())
+		# Start the pinging process!
+		threader(self.handle_check, ())
 
 	def handle_close(self):
 		pass
@@ -89,10 +90,11 @@ class newClient(asyncore.dispatcher):
 				# We're no longer here....
 				self.handle_close()
 				break
+
 			else:
 				self.push('PING %s' % int(time()))
 				self.pings += 1
-				sleep(15)
+				sleep(25)
 
 	def handle_error(self):
 		raise
@@ -113,8 +115,8 @@ class newClient(asyncore.dispatcher):
 		self.push('NOTICE %s :%s' % (location, line))
 
 def loop():
-    while True:
-        if len(asyncore.socket_map) == 0:
-            sleep(1)
-        else:
-            asyncore.poll(1)
+	while True:
+		if len(asyncore.socket_map) == 0:
+			sleep(1)
+		else:
+			asyncore.poll(1)

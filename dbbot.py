@@ -3,12 +3,12 @@ import sparks
 
 import signal
 import os
+import sys
 
-from sys import argv
 from confparser import confparser
 
 def on_sigint(signum, frame):
-	exit()
+	sys.exit(os.EX_OK)
 
 def main():
 	# Grab configurations
@@ -37,7 +37,7 @@ def main():
 
 	# Fork Background Stolen from Skyakdar! Thank you dKingston
 	# PROTIP: This might not work.... 
-	if '-bg' in argv:
+	if '-bg' in sys.argv:
 		try:
 			pid = os.fork()
 		except OSError as e:
