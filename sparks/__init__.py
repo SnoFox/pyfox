@@ -6,7 +6,6 @@ import asyncore
 import socket
 import re
 
-from modules import dbmods as mods
 from time import sleep, time
 from thread import start_new_thread as threader
 
