@@ -84,10 +84,10 @@ class newClient(asyncore.dispatcher):
 					if line[0] == 'PING':
 						self.push('PONG %s' % line[1])
 
-					elif line[1] == 'PONG':
+					if line[1] == 'PONG':
 						self.hang -= 1
 
-					elif line[1] == 'PRIVMSG': # What we need! Finally.
+					if line[1] == 'PRIVMSG': # What we need! Finally.
 						client = re.split(':(.*)!(.*)@(.*)', line[0])
 
 						if client:
@@ -100,16 +100,27 @@ class newClient(asyncore.dispatcher):
 
 									if trigger in self.config['triggers']:
 										if trigger == self.config['triggers'][0] and client[3] in self.config['admins']: # Admin trigger
-											pass
+											for mod in modules.dbmods:
+												if hasattr(mod, 'ca_%s' % command[1:]):
+													cmd = getattr(mod, 'ca_%s' % command[1:])
+													cmd(self, client, line[2], params)
 
 										elif trigger == self.config['triggers'][1]: # Public trigger
-											pass
+											for mod in modules.dbmods:
+												if hasattr(mod, 'cp_%s' % command[1:]):
+													cmd = getattr(mod, 'cp_%s' % command[1:])
+													cmd(self, client, line[2], params)
 
 							else: # Private Message
 								pass
 
 						else: # Server
 							pass
+
+					for mod in modules.dbmods:
+						if hasattr(mod, 'sr_%s' % line[1].lower()):
+							cmd = getattr(mod, 'sr_%s' % line[1].lower())
+							cmd(self, line[2:])
 
 	def handle_check(self):
 		while True:
@@ -144,6 +155,12 @@ class newClient(asyncore.dispatcher):
 
 	def notice(self, location, line):
 		self.push('NOTICE %s :%s' % (location, line))
+
+	def join(self, channel):
+		self.push('JOIN %s' % channel)
+
+	def part(self, channel):
+		self.push('PART %s' % channel)
 
 def loop():
 	while True:
