@@ -22,34 +22,34 @@ def sr_001(irc, params):
 def sr_005(irc, params):
 	# Find all the modes!
 
-        line = ' '.join(params) if 'PREFIX' in ' '.join(params) else None
+	line = ' '.join(params) if 'PREFIX' in ' '.join(params) else None
 
-        if line:
+	if line:
 
-                rprefix = search('PREFIX=\(([^)]+)\)([^ ]+)', line).groups()
-                irc.statusmodes = dict(zip(rprefix[1], rprefix[0]))
+		rprefix = search('PREFIX=\(([^)]+)\)([^ ]+)', line).groups()
+		irc.statusmodes = dict(zip(rprefix[1], rprefix[0]))
 
 def sr_353(irc, params):
 	# Create a nicklist for each channel
-        if not hasattr(irc, 'chanlists'):
+	if not hasattr(irc, 'chanlists'):
 		irc.chanlists = {}
 
-        # Coded by _habnabit #python Freenode. Greatly appreciated!
-        ret = {}
-        ret2 = {}
+	# Coded by _habnabit #python Freenode. Greatly appreciated!
+	ret = {}
+	ret2 = {}
 
-        for nick in params[3:]:
-                nick = nick.lstrip(':')
-                nick_modes = []
+	for nick in params[3:]:
+		nick = nick.lstrip(':')
+		nick_modes = []
 
-                for e, char in enumerate(nick):
-                        if char not in irc.statusmodes:
-                                ret[nick[e:]] = nick_modes
-                                break
+		for e, char in enumerate(nick):
+			if char not in irc.statusmodes:
+				ret[nick[e:]] = nick_modes
+				break
 
-                        nick_modes.append(irc.statusmodes[char])
+			nick_modes.append(irc.statusmodes[char])
 
-        for r in ret:
-                ret2[r] = ''.join(ret[r])
+	for r in ret:
+		ret2[r] = ''.join(ret[r])
 
-        irc.chanlists[params[2]] = ret2
+	irc.chanlists[params[2]] = ret2
