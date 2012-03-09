@@ -1,5 +1,4 @@
 # Copyright (C) David B. Dixon II 2012
-# IRC module
 
 import modules
 import asyncore
@@ -111,7 +110,22 @@ class newClient(asyncore.dispatcher):
 													cmd(self, client, line[2], params)
 
 							else: # Private Message
-								pass
+								command = line[3].strip(':')
+								params = line[4:]
+
+								if command.startswith(self.config['triggers'][0]):
+									if client[3] in self.config['admins']: # Admin trigger
+
+										for mod in modules.dbmods:
+											if hasattr(mod, 'pa_%s' % command[1:]):
+												cmd = getattr(mod, 'pa_%s' % command[1:])
+												cmd(self, client, params)
+
+								else: # Public Private Commands don't require a trigger.
+									for mod in modules.dbmods:
+										if hasattr(mod, 'pp_%s' % command):
+											cmd = getattr(mod, 'pp_%s' % command)
+											cmd(self, client, params)
 
 						else: # Server
 							pass

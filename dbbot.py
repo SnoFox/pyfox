@@ -4,36 +4,34 @@ import sparks
 import signal
 import os
 import sys
-
-from confparser import confparser
+import yaml
 
 def on_sigint(signum, frame):
 	sys.exit(os.EX_OK)
 
 def main():
 	# Grab configurations
-	config = confparser('servers.conf')
+	config = yaml.load(open('servers.conf'))
 
 	# Basic Setup
 	signal.signal(signal.SIGINT, on_sigint)
 	
-	for s in config.sections_list():
-		server = config.get_section(s)
+	for name, conf in config.items():
 
-		server['name'] = s
-		server['admins'] = [] if 'admins' not in server else server['admins'].split(',')
+		conf['name'] = name
+		conf['admins'] = [] if 'admins' not in conf else conf['admins'].split(',')
 
-		if not server['triggers']:
-			print('Network triggers have not been setup for %s. Stopping!' % server['name'])
+		if not conf['triggers']:
+			print('Network triggers have not been setup for %s. Stopping!' % conf['name'])
 			exit()
 
-		server['triggers'] = server['triggers'].split(',', 1)
+		conf['triggers'] = conf['triggers'].split(',', 1)
 
-		if len(server['triggers']) != 2:
-			print('Triggers have not been setup correctly for %s. Stopping!' % server['name'])
+		if len(conf['triggers']) != 2:
+			print('Triggers have not been setup correctly for %s. Stopping!' % conf['name'])
 			exit()
 
-		sparks.newClient(server)
+		sparks.newClient(conf)
 
 	sparks.loop()
 
