@@ -3,6 +3,8 @@
 
 import asyncore
 import socket
+
+from modules import dbmods as mods
 from time import sleep, time
 from thread import start_new_thread as threader
 
@@ -81,7 +83,10 @@ class newClient(asyncore.dispatcher):
 						self.push('PONG %s' % line[1])
 
 					elif line[1] == 'PONG':
-						self.ping -= 1
+						self.hang -= 1
+
+					elif line[1] == 'PRIVMSG': # What we need! Finally.
+						pass
 
 	def handle_check(self):
 		while True:
