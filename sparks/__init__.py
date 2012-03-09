@@ -1,8 +1,10 @@
 # Copyright (C) David B. Dixon II 2012
 # IRC module
 
+import modules
 import asyncore
 import socket
+import re
 
 from modules import dbmods as mods
 from time import sleep, time
@@ -86,7 +88,28 @@ class newClient(asyncore.dispatcher):
 						self.hang -= 1
 
 					elif line[1] == 'PRIVMSG': # What we need! Finally.
-						pass
+						client = re.split(':(.*)!(.*)@(.*)', line[0])
+
+						if client:
+							if line[2].startswith('#'): # Channel
+								command = line[3].strip(':')
+								params = line[4:]
+
+								if len(command) > 1:
+									trigger = command[0]
+
+									if trigger in self.config['triggers']:
+										if trigger == self.config['triggers'][0] and client[3] in self.config['admins']: # Admin trigger
+											pass
+
+										elif trigger == self.config['triggers'][1]: # Public trigger
+											pass
+
+							else: # Private Message
+								pass
+
+						else: # Server
+							pass
 
 	def handle_check(self):
 		while True:

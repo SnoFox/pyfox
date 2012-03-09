@@ -1,6 +1,5 @@
 # Copyright (C) David B. Dixon II 2012
 import sparks
-import modules
 
 import signal
 import os
@@ -9,6 +8,8 @@ import sys
 from confparser import confparser
 
 def on_sigint(signum, frame):
+	print sparks.asyncore.socket_map
+
 	sys.exit(os.EX_OK)
 
 def main():
