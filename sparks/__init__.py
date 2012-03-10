@@ -125,7 +125,7 @@ class newClient(asyncore.dispatcher):
 										for mod in modules.dbmods:
 											if hasattr(mod, 'tpa_%s' % command[1:]):
 												cmd = getattr(mod, 'tpa_%s' % command[1:])
-												cmd(self, client, params)
+												threader(cmd, (self, client, params))
 											elif hasattr(mod, 'pa_%s' % command[1:]):
 												cmd = getattr(mod, 'pa_%s' % command[1:])
 												cmd(self, client, params)
@@ -134,7 +134,7 @@ class newClient(asyncore.dispatcher):
 									for mod in modules.dbmods:
 										if hasattr(mod, 'tpp_%s' % command):
 											cmd = getattr(mod, 'tpp_%s' % command)
-											cmd(self, client, params)
+											threader(cmd, (self, client, params))
 										elif hasattr(mod, 'pp_%s' % command):
 											cmd = getattr(mod, 'pp_%s' % command)
 											cmd(self, client, params)
@@ -145,7 +145,7 @@ class newClient(asyncore.dispatcher):
 					for mod in modules.dbmods:
 						if hasattr(mod, 'tsr_%s' % line[1].lower()):
 							cmd = getattr(mod, 'tsr_%s' % line[1].lower())
-							cmd(self, line[2:])
+							threader(cmd, (self, line[2:]))
 						elif hasattr(mod, 'sr_%s' % line[1].lower()):
 							cmd = getattr(mod, 'sr_%s' % line[1].lower())
 							cmd(self, line[2:])
