@@ -99,13 +99,19 @@ class newClient(asyncore.dispatcher):
 									if trigger in self.config['triggers']:
 										if trigger == self.config['triggers'][0] and client[3] in self.config['admins']: # Admin trigger
 											for mod in modules.dbmods:
-												if hasattr(mod, 'ca_%s' % command[1:]):
+												if hasattr(mod, 'tca_%s' % command[1:]):
+													cmd = getattr(mod, 'tca_%s' % command[1:])
+													threader(cmd, (self, client, line[2], params))
+												elif hasattr(mod, 'ca_%s' % command[1:]):
 													cmd = getattr(mod, 'ca_%s' % command[1:])
 													cmd(self, client, line[2], params)
 
 										elif trigger == self.config['triggers'][1]: # Public trigger
 											for mod in modules.dbmods:
-												if hasattr(mod, 'cp_%s' % command[1:]):
+												if hasattr(mod, 'tcp_%s' % command[1:]):
+													cmd = getattr(mod, 'tcp_%s' % command[1:])
+													threader(cmd, (self, client, line[2], params))
+												elif hasattr(mod, 'cp_%s' % command[1:]):
 													cmd = getattr(mod, 'cp_%s' % command[1:])
 													cmd(self, client, line[2], params)
 
@@ -117,13 +123,19 @@ class newClient(asyncore.dispatcher):
 									if client[3] in self.config['admins']: # Admin trigger
 
 										for mod in modules.dbmods:
-											if hasattr(mod, 'pa_%s' % command[1:]):
+											if hasattr(mod, 'tpa_%s' % command[1:]):
+												cmd = getattr(mod, 'tpa_%s' % command[1:])
+												cmd(self, client, params)
+											elif hasattr(mod, 'pa_%s' % command[1:]):
 												cmd = getattr(mod, 'pa_%s' % command[1:])
 												cmd(self, client, params)
 
 								else: # Public Private Commands don't require a trigger.
 									for mod in modules.dbmods:
-										if hasattr(mod, 'pp_%s' % command):
+										if hasattr(mod, 'tpp_%s' % command):
+											cmd = getattr(mod, 'tpp_%s' % command)
+											cmd(self, client, params)
+										elif hasattr(mod, 'pp_%s' % command):
 											cmd = getattr(mod, 'pp_%s' % command)
 											cmd(self, client, params)
 
@@ -131,7 +143,10 @@ class newClient(asyncore.dispatcher):
 							pass
 
 					for mod in modules.dbmods:
-						if hasattr(mod, 'sr_%s' % line[1].lower()):
+						if hasattr(mod, 'tsr_%s' % line[1].lower()):
+							cmd = getattr(mod, 'tsr_%s' % line[1].lower())
+							cmd(self, line[2:])
+						elif hasattr(mod, 'sr_%s' % line[1].lower()):
 							cmd = getattr(mod, 'sr_%s' % line[1].lower())
 							cmd(self, line[2:])
 
