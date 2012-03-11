@@ -57,5 +57,23 @@ def sr_353(irc, params):
 
 	irc.chanlists[params[2]] = ret2
 
+def sr_part(irc, params):
+	if params[0].startswith(':'):
+		params[0] = params[0][1:]
+
+	irc.push("NAMES %s" % params[0])
+
+def sr_join(irc, params):
+	if params[0].startswith(':'):
+		params[0] = params[0][1:]
+
+	irc.push("NAMES %s" % params[0])
+
+def sr_mode(irc, params):
+	if params[0].startswith(':'):
+		params[0] = params[0][1:]
+
+	irc.push("NAMES %s" % params[0])
+
 def ca_chanlist(irc, client, channel, params):
 	irc.privmsg(channel, irc.chanlists[channel])

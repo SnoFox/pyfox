@@ -8,9 +8,15 @@ def ca_loaded(irc, client, channel, params):
 	irc.privmsg(channel, "Haha! Loaded... like you!")
 
 	for n, mod in enumerate(dbmods):
-		l.append(mod.__file__)
+		c = []
 
-	irc.privmsg(channel, "Loaded modules: %s" % ' '.join(l))
+		for x in dir(mod):
+			if len(x) > 3 and x[:3] in ('sr_', 'cp_', 'ca_', 'pp_', 'pa_'):
+				c.append(x)
+			elif len(x) > 4 and x[:4] in ('tsr_', 'tcp_', 'tca_', 'tpp_', 'tpa_'):
+				c.append(x)
+
+		irc.privmsg(channel, "%s: %s" % (mod.__file__, ' '.join(c)))
 
 def ca_reload(irc, client, channel, params):
 	if len(params) == 0:
