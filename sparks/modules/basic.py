@@ -1,7 +1,8 @@
 # This file is basic for dbbot
 from re import search
+from time import sleep
 
-def sr_001(irc, params):
+def tsr_001(irc, params):
 	# Nick Authentication
 	auth = irc.config['modules']['auth']
 
@@ -16,6 +17,8 @@ def sr_001(irc, params):
 
 	# Join channels
 	channels = irc.config['modules']['join']
+
+	sleep(1)
 
 	irc.join(channels)
 
