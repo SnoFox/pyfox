@@ -56,3 +56,6 @@ def sr_353(irc, params):
 		ret2[r] = ''.join(ret[r])
 
 	irc.chanlists[params[2]] = ret2
+
+def ca_chanlist(irc, client, channel, params):
+	irc.privmsg(channel, irc.chanlists[channel])

@@ -32,8 +32,8 @@ def ca_reload(irc, client, channel, params):
 
 			if module:
 				dbmods.append(module)
-				irc.privmsg(channel, "Successfully reloading %s!" % name)
-				return
+				irc.privmsg(channel, "Successfully reloaded %s!" % name)
+				break
 
 def ca_load(irc, client, channel, params):
 	if len(params) == 0:
@@ -74,3 +74,4 @@ def ca_unload(irc, client, channel, params):
 			del dbmods[n]
 
 			irc.privmsg(channel, "Successfully unloaded %s!" % params[0])
+			break
