@@ -29,7 +29,8 @@ class newClient(asyncore.dispatcher):
 		self.admins = config['admins']
 		self.nick = config['nick']
 		self.modconf = config['modules']
-		self.serverpass = config['serverpass']
+		if config.get( 'serverpass' ):
+			self.serverpass = config['serverpass']
 
 		# In a nutshell, Get a list of IPs for that domain and connect to it.
 		socket_data = socket.getaddrinfo(self.server, int(self.port), 0, 1)[0]
@@ -37,7 +38,7 @@ class newClient(asyncore.dispatcher):
 		self.connect(socket_data[4])
 
 		# Does the network need a password in order to connect?
-		if self.serverpass:
+		if hasattr( self, 'serverpass' ):
 			self.push('PASS %s' % self.serverpass)
 
 	def handle_connect(self):
