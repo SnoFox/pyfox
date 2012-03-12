@@ -92,7 +92,8 @@ class newClient(asyncore.dispatcher):
 						command = line[1]
 						target = line[2]
 						params = line[3:]
-						
+
+
 						if len( params ) > 0:
 							# Check for param-less cmds >.<
 							if params[0].startswith( ':' ):
@@ -122,9 +123,9 @@ class newClient(asyncore.dispatcher):
 								else:
 									chanmsg = False
 							except NameError:
-								print "ERROR: Got a PRIVMSG before proper registration. Go slap the server dev. :("
-								print "       We need the RPL_ISUPPORT numeric (005) with the CHANTYPES value to"
-								print "       properly handle channel messages."
+								#print "ERROR: Got a PRIVMSG before proper registration. Go slap the server dev. :("
+								#print "       We need the RPL_ISUPPORT numeric (005) with the CHANTYPES value to"
+								#print "       properly handle channel messages."
 								chanmsg = False
 
 							if chanmsg:
@@ -137,7 +138,6 @@ class newClient(asyncore.dispatcher):
 
 
 									if trigger in self.config['triggers']:
-										print "Searching cmds..."
 										if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tca_%s' % botCmd[1:]):
@@ -180,14 +180,17 @@ class newClient(asyncore.dispatcher):
 											cmd = getattr(mod, 'pp_%s' % botCmd)
 											cmd(self, client, params)
 
+						
+						# if we're here, Dave doesn't anything useful in the core, so maul the parameters
+						# into some unusable state again and send it off to the rest of the bot - SnoFox
+						params.insert(0, target)
 						for mod in modules.dbmods:
-
 							if hasattr(mod, 'tsr_%s' % command.lower() ):
 								cmd = getattr(mod, 'tsr_%s' % command.lower())
-								threader(cmd, (self, client, line[2:]))
+								threader(cmd, (self, client, params))
 							elif hasattr(mod, 'sr_%s' % command.lower()):
 								cmd = getattr(mod, 'sr_%s' % command.lower())
-								cmd(self, client, line[2:])
+								cmd(self, client, params)
 
 	def handle_check(self):
 		while True:
