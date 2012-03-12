@@ -155,8 +155,8 @@ class newClient(asyncore.dispatcher):
 													cmd(self, client, target, params)
 
 							else: # Private Message
-								botCmd = params[1]
-								params = params[2:]
+								botCmd = params[0]
+								params = params[1:]
 
 								if botCmd.startswith(self.config['triggers'][0]):
 									if client[2] in self.config['admins']: # Admin trigger
