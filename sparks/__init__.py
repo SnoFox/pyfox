@@ -98,7 +98,7 @@ class newClient(asyncore.dispatcher):
 							if params[0].startswith( ':' ):
 								# Strip the leading colon here instead of in a thousand
 								# other places in the code...
-								params = params[0][1:]
+								params[0] = params[0][1:]
 
 						# Server or user-sourced? Also, give it an ident@address
 						client = source.split( '!', 2 )
@@ -122,19 +122,22 @@ class newClient(asyncore.dispatcher):
 								else:
 									chanmsg = False
 							except NameError:
-								#print "ERROR: Got a PRIVMSG before proper registration. Go slap the server dev. :("
-								#print "       We need the RPL_ISUPPORT numeric (005) with the CHANTYPES value to"
-								#print "       properly handle channel messages."
+								print "ERROR: Got a PRIVMSG before proper registration. Go slap the server dev. :("
+								print "       We need the RPL_ISUPPORT numeric (005) with the CHANTYPES value to"
+								print "       properly handle channel messages."
 								chanmsg = False
 
 							if chanmsg:
-								botCmd = params[1]
-								params = params[2:]
+								botCmd = params[0]
+								params = params[1:]
+
 
 								if len(botCmd) > 1:
 									trigger = botCmd[0]
 
+
 									if trigger in self.config['triggers']:
+										print "Searching cmds..."
 										if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tca_%s' % botCmd[1:]):
