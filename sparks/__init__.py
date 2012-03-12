@@ -32,7 +32,7 @@ class newClient(asyncore.dispatcher):
 
 	def handle_connect(self):
 		self.push('NICK %s' % self.config['nick'])
-		self.push('USER %s 0 0 :dbbot written by dbdii407' % self.config['nick'])
+		self.push('USER %s 0 0 :%s' % (self.config['nick'],self.config['realname'])
 
 		# Start the pinging process!
 		threader(self.handle_check, ())
@@ -178,10 +178,10 @@ class newClient(asyncore.dispatcher):
 
 							if hasattr(mod, 'tsr_%s' % command.lower() ):
 								cmd = getattr(mod, 'tsr_%s' % command.lower())
-								threader(cmd, (self, client, [ target, params ] ))
+								threader(cmd, (self, client, line[2:]))
 							elif hasattr(mod, 'sr_%s' % command.lower()):
 								cmd = getattr(mod, 'sr_%s' % command.lower())
-								cmd(self, client, [ target, params ] )
+								cmd(self, client, line[2:])
 
 	def handle_check(self):
 		while True:
