@@ -1,5 +1,5 @@
 # This file is basic for dbbot
-from re import search
+from re import search # needs regex for dbdii's prefix "sorter"
 from time import sleep
 
 def tsr_001(irc, params):
@@ -23,14 +23,74 @@ def tsr_001(irc, params):
 	irc.join(channels)
 
 def sr_005(irc, params):
-	# Find all the modes!
+    # 005 parser by SnoFox <SnoFox@SnoFox.net>
+	if not hasattr( irc, 'statusmodes' ):
+		# Set some default so dbbot dosen't crash
+		irc.statusmodes = dict( zip('@+', 'ov') )
 
-	line = ' '.join(params) if 'PREFIX' in ' '.join(params) else None
+	if not hasattr( irc, 'isupport' ):
+		# Create the initial dict so we can update it later
+		irc.isupport = dict()
+	
+	params.pop(0) # remove the nickname from params
 
-	if line:
+	x = 0;
+	while x < 5:
+		# literally "hack" off ":are supported by this server"
+		# Will break on broken, non-RFC-following servers
+		params.pop()
+		x += 1
 
-		rprefix = search('PREFIX=\(([^)]+)\)([^ ]+)', line).groups()
-		irc.statusmodes = dict(zip(rprefix[1], rprefix[0]))
+	# Iterate through the list
+	for isupport in params:
+		feature = isupport.split( '=', 2 )
+		if len(feature) < 2:
+			value = None
+		else:
+			value = feature[1]
+		irc.isupport.update( { feature[0]: value } )
+
+		# ok; now utilize some awesome ones for the core
+		if feature[0] == "PREFIX":
+			# Dave's original code, modified to work here
+			rprefix = search('\(([^)]+)\)([^ ]+)', value).groups()
+			irc.statusmodes = dict(zip(rprefix[1], rprefix[0]))
+
+		if feature[0] == "CHANMODES":
+			# CHANMODES=eIbq,k,flj,CEFGJKLMOPQSTcdgimnprstz
+			# refer to Atheme's technical document "MODES" for more info
+			# on how modes are classified here
+			# http://git.atheme.org/atheme/tree/doc/technical/MODES?id=atheme-services-7.0.0-alpha14
+			# A: listmodes
+			# B: parameter when set/unset
+			# C: parameter only when set
+			# D: no param
+			# E: prefix mode (not dealt with here)
+
+			# indecies of the list:
+			# 0 = A, 1 = B, 2 = C, 3 = D
+			tmpList = [] # temporary list for the loop below
+			tmpList.insert( 0, [] ) # give it a blank list to modify
+			onType = 0 # the index of tmpList we're modifying atm
+
+			for char in value:
+				if char == ",":
+					# Comma is the type delimiter; next!
+					onType += 1
+					tmpList.insert( onType, [] ) # Create a new blank list in there to modify
+				else:
+					# Add the letter to the current list type
+					tmpList[onType].append( char )
+			# } for char in value
+
+			# take all the data out of the temporary list and put it in global areas
+			irc.listmodes = tmpList[0]
+			irc.typebmodes = tmpList[1]
+			irc.typecmodes = tmpList[2]
+			irc.flagmodes = tmpList[3]
+	# } for isupport in params
+# } def sr_005
+
 
 def sr_353(irc, params):
 	# Create a nicklist for each channel
