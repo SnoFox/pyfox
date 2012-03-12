@@ -35,12 +35,9 @@ def sr_005(irc, client, params):
 	
 	params.pop(0) # remove the nickname from params
 
-	x = 0;
-	while x < 5:
-		# literally "hack" off ":are supported by this server"
-		# Will break on broken, non-RFC-following servers
-		params.pop()
-		x += 1
+	# Remove ":Are supported by this server
+	params = ' '.join(params).rpartition( ':' )
+	params = params[0].split( ' ' )
 
 	# Iterate through the list
 	for isupport in params:
