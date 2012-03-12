@@ -2,7 +2,7 @@
 from re import search # needs regex for dbdii's prefix "sorter"
 from time import sleep
 
-def tsr_001(irc, params):
+def tsr_001(irc, client, params):
 	# Nick Authentication
 	auth = irc.config['modules']['auth']
 
@@ -22,7 +22,7 @@ def tsr_001(irc, params):
 
 	irc.join(channels)
 
-def sr_005(irc, params):
+def sr_005(irc, client, params):
     # 005 parser by SnoFox <SnoFox@SnoFox.net>
 	if not hasattr( irc, 'statusmodes' ):
 		# Set some default so dbbot dosen't crash
@@ -92,7 +92,7 @@ def sr_005(irc, params):
 # } def sr_005
 
 
-def sr_353(irc, params):
+def sr_353(irc, client, params):
 	# Create a nicklist for each channel
 	if not hasattr(irc, 'chanlists'):
 		irc.chanlists = {}
@@ -117,19 +117,22 @@ def sr_353(irc, params):
 
 	irc.chanlists[params[2]] = ret2
 
-def sr_part(irc, params):
+def sr_part(irc, client, params):
 	if params[0].startswith(':'):
 		params[0] = params[0][1:]
 
 	irc.push("NAMES %s" % params[0])
 
-def sr_join(irc, params):
+def sr_join(irc, client, params):
 	if params[0].startswith(':'):
 		params[0] = params[0][1:]
 
 	irc.push("NAMES %s" % params[0])
 
-def sr_mode(irc, params):
+def sr_mode(irc, client, params):
+
+	print client
+
 	if params[0].startswith(':'):
 		params[0] = params[0][1:]
 

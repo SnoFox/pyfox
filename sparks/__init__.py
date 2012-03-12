@@ -86,7 +86,7 @@ class newClient(asyncore.dispatcher):
 						self.hang -= 1
 
 					if line[1] == 'PRIVMSG': # What we need! Finally.
-						client = re.split(':(.*)!(.*)@(.*)', line[0])
+						client = [ x for x in re.split(':(.*)!(.*)@(.*)', line[0]) if x != '']
 
 						if client:
 							if line[2].startswith('#'): # Channel
@@ -97,7 +97,7 @@ class newClient(asyncore.dispatcher):
 									trigger = command[0]
 
 									if trigger in self.config['triggers']:
-										if trigger == self.config['triggers'][0] and client[3] in self.config['admins']: # Admin trigger
+										if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tca_%s' % command[1:]):
 													cmd = getattr(mod, 'tca_%s' % command[1:])
@@ -120,7 +120,7 @@ class newClient(asyncore.dispatcher):
 								params = line[4:]
 
 								if command.startswith(self.config['triggers'][0]):
-									if client[3] in self.config['admins']: # Admin trigger
+									if client[2] in self.config['admins']: # Admin trigger
 
 										for mod in modules.dbmods:
 											if hasattr(mod, 'tpa_%s' % command[1:]):
@@ -143,12 +143,17 @@ class newClient(asyncore.dispatcher):
 							pass
 
 					for mod in modules.dbmods:
+						client = [ x for x in re.split(':(.*)!(.*)@(.*)', line[0]) if x != '']
+
+						if not client:
+							client = list(line[0])
+
 						if hasattr(mod, 'tsr_%s' % line[1].lower()):
 							cmd = getattr(mod, 'tsr_%s' % line[1].lower())
-							threader(cmd, (self, line[2:]))
+							threader(cmd, (self, client, line[2:]))
 						elif hasattr(mod, 'sr_%s' % line[1].lower()):
 							cmd = getattr(mod, 'sr_%s' % line[1].lower())
-							cmd(self, line[2:])
+							cmd(self, client, line[2:])
 
 	def handle_check(self):
 		while True:
