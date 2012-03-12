@@ -138,9 +138,6 @@ def sr_mode(irc, client, params):
 	# Sends out mode events for other modules to use
 	# - SnoFox
 
-	#print "sr_mode(): params = %s" % params
-	#sr_mode(): params = ['#foxtest', '-kCT', '*']
-	
 	# First of all, channel mode or user mode?
 
 	if target[0] in irc.isupport['CHANTYPES']:
@@ -169,11 +166,6 @@ def sr_mode(irc, client, params):
 					# These types of modes have params
 					# Launch events! Woo!
 					for n, mod in enumerate(dbmods):
-						# Dunno what the tsr_ events are for; let's not emit them to save another .2ms
-						# (for now)
-						#if hasattr(mod, 'tsr_%s' % command.lower() ):
-						#	cmd = getattr(mod, 'tsr_%s' % command.lower())
-						#	threader(cmd, (self, client, params))
 						if hasattr( mod, 'sr_chmode_%s' % char ):
 							cmd = getattr( mod, 'sr_chmode_%s' % char )
 							cmd( irc, client, target, adding, params[paramNum] )
@@ -188,8 +180,14 @@ def sr_mode(irc, client, params):
 							cmd( irc, client, target, adding, None )
 			else:
 				# Usermode get
-				print "Got user mode %s. Not a fuck was given that modeline." % char
-
+                # IRCds don't provide us with a way to get params like RPL_ISUPPORT CHANMODES
+                # so we won't support usermodes with params. I don't know of any umodes with
+                # params anyway --SnoFox
+                for n, mod in enumerate(dbmods):
+                    if hasattr( mod, 'sr_umode_%s' % char ):
+                        cmd = getattr( mod, 'sr_umode_%s' % char )
+                        cmd( irc, client, target, adding, None )
+                
 
 
 
