@@ -108,7 +108,18 @@ class newClient(asyncore.dispatcher):
 
 						if line[1] == 'PRIVMSG': # What we need! Finally.
 
-							if line[2].startswith('#'): # Channel
+							try:
+								if target[0] in self.isupport['CHANTYPES']:
+									chanmsg = True
+								else:
+									chanmsg = False
+							except NameError:
+								print "ERROR: Got a PRIVMSG before proper registration. Go slap the server dev. :("
+								print "       We need the RPL_ISUPPORT numeric (005) with the CHANTYPES value to"
+								print "       properly handle channel messages."
+								chanmsg = False
+
+							if chanmsg:
 								botCmd = line[3].strip(':')
 								params = line[4:]
 
