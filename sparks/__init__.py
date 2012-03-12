@@ -14,25 +14,35 @@ class newClient(asyncore.dispatcher):
 	def __init__(self, config):
 		asyncore.dispatcher.__init__(self)
 
-		self.config = config
 		self.received = None
 		self.buffer = []
 		self.hang = 0
 
 		self.cl = {}
 
+		self.nick = config['nick']
+		self.realname = config['realname']
+		self.triggers = config['triggers']
+		self.name = config['name'] # Use what's in the config. Networks can use the same name.
+		self.server = config['server']
+		self.port = config['port']
+		self.admins = config['admins']
+		self.nick = config['nick']
+		self.modconf = config['modules']
+		self.serverpass = config['serverpass']
+
 		# In a nutshell, Get a list of IPs for that domain and connect to it.
-		socket_data = socket.getaddrinfo(self.config['server'], int(self.config['port']), 0, 1)[0]
+		socket_data = socket.getaddrinfo(self.server, int(self.port), 0, 1)[0]
 		self.create_socket(socket_data[0], socket_data[1])
 		self.connect(socket_data[4])
 
 		# Does the network need a password in order to connect?
-		if 'serverpass' in self.config:
-			self.push('PASS %s' % self.config['serverpass'])
+		if self.serverpass:
+			self.push('PASS %s' % self.serverpass)
 
 	def handle_connect(self):
-		self.push('NICK %s' % self.config['nick'])
-		self.push('USER %s 0 0 :%s' % (self.config['nick'],self.config['realname']) )
+		self.push('NICK %s' % self.nick)
+		self.push('USER %s 0 0 :%s' % (self.nick, self.realname) )
 
 		# Start the pinging process!
 		threader(self.handle_check, ())
@@ -114,6 +124,11 @@ class newClient(asyncore.dispatcher):
 							# totally saving about .2ms here
 							del address
 
+						# SnoFox
+						if command == 'NICK':
+							if client[0] == self.nick:
+								self.nick = target
+
 						if command == 'PRIVMSG': # What we need! Finally.
 							#:SnoFox!~SnoFox@is.in-addr.arpa PRIVMSG #ext3 :Kiba ftw! :'D
 
@@ -135,8 +150,8 @@ class newClient(asyncore.dispatcher):
 								if len(botCmd) > 1:
 									trigger = botCmd[0]
 
-									if trigger in self.config['triggers']:
-										if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
+									if trigger in self.triggers:
+										if trigger == self.triggers[0] and client[2] in self.admins: # Admin trigger
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tca_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'tca_%s' % botCmd[1:])
@@ -145,7 +160,7 @@ class newClient(asyncore.dispatcher):
 													cmd = getattr(mod, 'ca_%s' % botCmd[1:])
 													cmd(self, client, target, params)
 
-										elif trigger == self.config['triggers'][1]: # Public trigger
+										elif trigger == self.triggers[1]: # Public trigger
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tcp_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'tcp_%s' % botCmd[1:])
@@ -158,8 +173,8 @@ class newClient(asyncore.dispatcher):
 								botCmd = params[0]
 								params = params[1:]
 
-								if botCmd.startswith(self.config['triggers'][0]):
-									if client[2] in self.config['admins']: # Admin trigger
+								if botCmd.startswith(self.triggers[0]):
+									if client[2] in self.admins: # Admin trigger
 
 										for mod in modules.dbmods:
 											if hasattr(mod, 'tpa_%s' % botCmd[1:]):

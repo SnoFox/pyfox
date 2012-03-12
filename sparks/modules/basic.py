@@ -5,7 +5,7 @@ from sparks.modules import dbmods # required to emit events from the mode parser
 
 def tsr_001(irc, client, target, params):
 	# Nick Authentication
-	auth = irc.config['modules']['auth']
+	auth = irc.modconf['auth']
 
 	if 'nick' in auth: # Authenticate using a nick
 		if type(auth['nick']) == bool:
@@ -17,7 +17,7 @@ def tsr_001(irc, client, target, params):
 		irc.privmsg(auth['service'], "%s %s" % (auth['command'], auth['password']))
 
 	# Join channels
-	channels = irc.config['modules']['join']
+	channels = irc.modconf['join']
 
 	sleep(1)
 

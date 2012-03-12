@@ -6,5 +6,5 @@ def ca_rawon(irc, client, channel, params):
 	if len(params) > 1:
 		for s in sockets:
 			network = sockets[s]
-			if network.config['name'] == params[0]:
+			if network.name == params[0]:
 				network.push(' '.join(params[1:]))
