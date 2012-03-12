@@ -79,81 +79,103 @@ class newClient(asyncore.dispatcher):
 
 					line = [q for q in line.split(' ') if q != '']
 
-					if line[0] == 'PING':
-						self.push('PONG %s' % line[1])
+					if not line[0].startswith( ':' ):
+						# Direct stuff (ping/pong/my quit/error)
+						if line[0] == 'PING':
+							self.push('PONG %s' % line[1])
+							continue
 
-					if line[1] == 'PONG':
-						self.hang -= 1
+						if line[1] == 'PONG':
+							self.hang -= 1
+					else:	
+						# "relayed" (actual IRC stuff)
+						source = line[0][1:]
+						command = line[1]
+						target = line[2]
+						params = line[3:]
 
-					if line[1] == 'PRIVMSG': # What we need! Finally.
-						client = [ x for x in re.split(':(.*)!(.*)@(.*)', line[0]) if x != '']
+						# Server or user-sourced? Also, give it an ident@address
+						client = source.split( '!', 2 )
+						if len( client ) < 2:
+							# server sourced; set a fake address, I guess?
+							client.append( '<server>' )
+						else:
+							# user-sourced; add their address to the client[] list
+							address = client[1].split( '@', 2 )
+							client[1] = address[0]
+							client.append( address[1] )
+							# totally saving about .2ms here
+							del address
 
-						if client:
-							if line[2].startswith('#'): # Channel
-								command = line[3].strip(':')
-								params = line[4:]
+						print "client: %s command: %s target: %s params: %s" % (client,command,target,params)
 
-								if len(command) > 1:
-									trigger = command[0]
+						if line[1] == 'PRIVMSG': # What we need! Finally.
 
-									if trigger in self.config['triggers']:
-										if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
+							if client:
+								if line[2].startswith('#'): # Channel
+									command = line[3].strip(':')
+									params = line[4:]
+
+									if len(command) > 1:
+										trigger = command[0]
+
+										if trigger in self.config['triggers']:
+											if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
+												for mod in modules.dbmods:
+													if hasattr(mod, 'tca_%s' % command[1:]):
+														cmd = getattr(mod, 'tca_%s' % command[1:])
+														threader(cmd, (self, client, line[2], params))
+													elif hasattr(mod, 'ca_%s' % command[1:]):
+														cmd = getattr(mod, 'ca_%s' % command[1:])
+														cmd(self, client, line[2], params)
+
+											elif trigger == self.config['triggers'][1]: # Public trigger
+												for mod in modules.dbmods:
+													if hasattr(mod, 'tcp_%s' % command[1:]):
+														cmd = getattr(mod, 'tcp_%s' % command[1:])
+														threader(cmd, (self, client, line[2], params))
+													elif hasattr(mod, 'cp_%s' % command[1:]):
+														cmd = getattr(mod, 'cp_%s' % command[1:])
+														cmd(self, client, line[2], params)
+
+								else: # Private Message
+									command = line[3].strip(':')
+									params = line[4:]
+
+									if command.startswith(self.config['triggers'][0]):
+										if client[2] in self.config['admins']: # Admin trigger
+
 											for mod in modules.dbmods:
-												if hasattr(mod, 'tca_%s' % command[1:]):
-													cmd = getattr(mod, 'tca_%s' % command[1:])
-													threader(cmd, (self, client, line[2], params))
-												elif hasattr(mod, 'ca_%s' % command[1:]):
-													cmd = getattr(mod, 'ca_%s' % command[1:])
-													cmd(self, client, line[2], params)
+												if hasattr(mod, 'tpa_%s' % command[1:]):
+													cmd = getattr(mod, 'tpa_%s' % command[1:])
+													threader(cmd, (self, client, params))
+												elif hasattr(mod, 'pa_%s' % command[1:]):
+													cmd = getattr(mod, 'pa_%s' % command[1:])
+													cmd(self, client, params)
 
-										elif trigger == self.config['triggers'][1]: # Public trigger
-											for mod in modules.dbmods:
-												if hasattr(mod, 'tcp_%s' % command[1:]):
-													cmd = getattr(mod, 'tcp_%s' % command[1:])
-													threader(cmd, (self, client, line[2], params))
-												elif hasattr(mod, 'cp_%s' % command[1:]):
-													cmd = getattr(mod, 'cp_%s' % command[1:])
-													cmd(self, client, line[2], params)
-
-							else: # Private Message
-								command = line[3].strip(':')
-								params = line[4:]
-
-								if command.startswith(self.config['triggers'][0]):
-									if client[2] in self.config['admins']: # Admin trigger
-
+									else: # Public Private Commands don't require a trigger.
 										for mod in modules.dbmods:
-											if hasattr(mod, 'tpa_%s' % command[1:]):
-												cmd = getattr(mod, 'tpa_%s' % command[1:])
+											if hasattr(mod, 'tpp_%s' % command):
+												cmd = getattr(mod, 'tpp_%s' % command)
 												threader(cmd, (self, client, params))
-											elif hasattr(mod, 'pa_%s' % command[1:]):
-												cmd = getattr(mod, 'pa_%s' % command[1:])
+											elif hasattr(mod, 'pp_%s' % command):
+												cmd = getattr(mod, 'pp_%s' % command)
 												cmd(self, client, params)
 
-								else: # Public Private Commands don't require a trigger.
-									for mod in modules.dbmods:
-										if hasattr(mod, 'tpp_%s' % command):
-											cmd = getattr(mod, 'tpp_%s' % command)
-											threader(cmd, (self, client, params))
-										elif hasattr(mod, 'pp_%s' % command):
-											cmd = getattr(mod, 'pp_%s' % command)
-											cmd(self, client, params)
+							else: # Server
+								pass
 
-						else: # Server
-							pass
+						for mod in modules.dbmods:
 
-					for mod in modules.dbmods:
-						client = [ x for x in re.split(':(.*)!(.*)@(.*)', line[0]) if x != '']
+							if not client:
+								client = list(line[0])
 
-						if not client:
-							client = list(line[0])
-
-						if hasattr(mod, 'tsr_%s' % line[1].lower()):
-							cmd = getattr(mod, 'tsr_%s' % line[1].lower())
-							threader(cmd, (self, client, line[2:]))
-						elif hasattr(mod, 'sr_%s' % line[1].lower()):
-							cmd = getattr(mod, 'sr_%s' % line[1].lower())
-							cmd(self, client, line[2:])
+							if hasattr(mod, 'tsr_%s' % line[1].lower()):
+								cmd = getattr(mod, 'tsr_%s' % line[1].lower())
+								threader(cmd, (self, client, line[2:]))
+							elif hasattr(mod, 'sr_%s' % line[1].lower()):
+								cmd = getattr(mod, 'sr_%s' % line[1].lower())
+								cmd(self, client, line[2:])
 
 	def handle_check(self):
 		while True:
