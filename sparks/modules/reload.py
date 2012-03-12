@@ -43,7 +43,7 @@ def ca_reload(irc, client, channel, params):
 
 def ca_load(irc, client, channel, params):
 	if len(params) == 0:
-		irc.privmsg(channel, "Sure! I can reload thin air! ....Not really.")
+		irc.privmsg(channel, "Sure! I can load thin air! ....Not really.")
 		return
 
 	# This is cool. It allows us to edit dbmods!
@@ -58,7 +58,7 @@ def ca_load(irc, client, channel, params):
 	filepath = "sparks/modules/%s.py" % params[0]
 
 	if not os.path.exists(filepath):
-		irc.privmsg(channel, "Sure! I can load thin air! ....Not really.")
+		irc.privmsg(channel, "Sure! I can load thin air! ....Where's the file?!?")
 		return
 
 	module = imp.load_source(pypath, filepath)
