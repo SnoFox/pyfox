@@ -32,7 +32,7 @@ class newClient(asyncore.dispatcher):
 
 	def handle_connect(self):
 		self.push('NICK %s' % self.config['nick'])
-		self.push('USER %s 0 0 :%s' % (self.config['nick'],self.config['realname'])
+		self.push('USER %s 0 0 :%s' % (self.config['nick'],self.config['realname']) )
 
 		# Start the pinging process!
 		threader(self.handle_check, ())
@@ -92,10 +92,13 @@ class newClient(asyncore.dispatcher):
 						command = line[1]
 						target = line[2]
 						params = line[3:]
-						if params.startswith( ':' ):
-							# Strip the leading colon here instead of in a thousand
-							# other places in the code...
-							params = params[1:]
+						
+						if len( params ) > 0:
+							# Check for param-less cmds >.<
+							if params[0].startswith( ':' ):
+								# Strip the leading colon here instead of in a thousand
+								# other places in the code...
+								params = params[0][1:]
 
 						# Server or user-sourced? Also, give it an ident@address
 						client = source.split( '!', 2 )
