@@ -3,7 +3,7 @@ from re import search # needs regex for dbdii's prefix "sorter"
 from time import sleep
 from sparks.modules import dbmods # required to emit events from the mode parser
 
-def tsr_001(irc, client, params):
+def tsr_001(irc, client, target, params):
 	# Nick Authentication
 	auth = irc.config['modules']['auth']
 
@@ -23,7 +23,7 @@ def tsr_001(irc, client, params):
 
 	irc.join(channels)
 
-def sr_005(irc, client, params):
+def sr_005(irc, client, target, params):
     # 005 parser by SnoFox <SnoFox@SnoFox.net>
 	if not hasattr( irc, 'statusmodes' ):
 		# Set some default so dbbot dosen't crash
@@ -33,7 +33,7 @@ def sr_005(irc, client, params):
 		# Create the initial dict so we can update it later
 		irc.isupport = dict()
 	
-	params.pop(0) # remove the nickname from params
+	# params.pop(0) # remove the nickname from params
 
 	# Remove ":Are supported by this server
 	params = ' '.join(params).rpartition( ':' )
@@ -42,6 +42,7 @@ def sr_005(irc, client, params):
 	# Iterate through the list
 	for isupport in params:
 		feature = isupport.split( '=', 2 )
+
 		if len(feature) < 2:
 			value = None
 		else:
@@ -95,7 +96,7 @@ def sr_005(irc, client, params):
 # } def sr_005
 
 
-def sr_353(irc, client, params):
+def sr_353(irc, client, target, params):
 	# Create a nicklist for each channel
 	if not hasattr(irc, 'chanlists'):
 		irc.chanlists = {}
@@ -120,16 +121,13 @@ def sr_353(irc, client, params):
 
 	irc.chanlists[params[2]] = ret2
 
-def sr_part(irc, client, params):
-	irc.push("NAMES %s" % params[0])
+def sr_part(irc, client, target, params):
+	irc.push("NAMES %s" % target)
 
-def sr_join(irc, client, params):
-	irc.push("NAMES %s" % params[0])
+def sr_join(irc, client, target, params):
+	irc.push("NAMES %s" % target)
 
-def sr_mode(irc, client, params):
-	irc.push("NAMES %s" % params[0])
-
-	target = params[0]
+def sr_mode(irc, client, target, params):
 	# Mode parser
 	# Sends out mode events for other modules to use
 	# - SnoFox
@@ -137,6 +135,7 @@ def sr_mode(irc, client, params):
 	# First of all, channel mode or user mode?
 
 	if target[0] in irc.isupport['CHANTYPES']:
+		irc.push("NAMES %s" % target)
 		chmode = True 
 	else:
 		chmode = False
@@ -148,7 +147,7 @@ def sr_mode(irc, client, params):
 	# XXX: This will crash the bot if the IRCd lied to us in the 005 version string
 	# then later sends us a mode line that doesn't agree with our knowledge of modes
 	# That ... Should probably be fixed.
-	for char in params[1]:
+	for char in params[0]:
 		# Are we adding or subtracting the mode?
 		if char == '+':
 			adding = True
