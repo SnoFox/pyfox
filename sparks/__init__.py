@@ -132,10 +132,10 @@ class newClient(asyncore.dispatcher):
 								botCmd = params[0]
 								params = params[1:]
 
+								print params
 
 								if len(botCmd) > 1:
 									trigger = botCmd[0]
-
 
 									if trigger in self.config['triggers']:
 										if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
@@ -150,9 +150,11 @@ class newClient(asyncore.dispatcher):
 										elif trigger == self.config['triggers'][1]: # Public trigger
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tcp_%s' % botCmd[1:]):
+													self.privmsg(target, "%s %s %s" % (client, target, params))
 													cmd = getattr(mod, 'tcp_%s' % botCmd[1:])
 													threader(cmd, (self, client, target, params))
 												elif hasattr(mod, 'cp_%s' % botCmd[1:]):
+													self.privmsg(target, "%s %s %s" % (client, target, params))
 													cmd = getattr(mod, 'cp_%s' % botCmd[1:])
 													cmd(self, client, target, params)
 
@@ -183,12 +185,13 @@ class newClient(asyncore.dispatcher):
 						
 						# if we're here, Dave doesn't anything useful in the core, so maul the parameters
 						# into some unusable state again and send it off to the rest of the bot - SnoFox
-						params.insert(0, target)
 						for mod in modules.dbmods:
 							if hasattr(mod, 'tsr_%s' % command.lower() ):
+								params.insert(0, target)
 								cmd = getattr(mod, 'tsr_%s' % command.lower())
 								threader(cmd, (self, client, params))
 							elif hasattr(mod, 'sr_%s' % command.lower()):
+								params.insert(0, target)
 								cmd = getattr(mod, 'sr_%s' % command.lower())
 								cmd(self, client, params)
 
