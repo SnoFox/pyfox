@@ -145,7 +145,7 @@ class newClient(asyncore.dispatcher):
 
 							if chanmsg:
 								botCmd = params[0]
-								params = params[1:]
+								_params = params[1:]
 
 								if len(botCmd) > 1:
 									trigger = botCmd[0]
@@ -155,23 +155,23 @@ class newClient(asyncore.dispatcher):
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tca_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'tca_%s' % botCmd[1:])
-													threader(cmd, (self, client, target, params))
+													threader(cmd, (self, client, target, _params))
 												elif hasattr(mod, 'ca_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'ca_%s' % botCmd[1:])
-													cmd(self, client, target, params)
+													cmd(self, client, target, _params)
 
 										elif trigger == self.triggers[1]: # Public trigger
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tcp_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'tcp_%s' % botCmd[1:])
-													threader(cmd, (self, client, target, params))
+													threader(cmd, (self, client, target, _params))
 												elif hasattr(mod, 'cp_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'cp_%s' % botCmd[1:])
-													cmd(self, client, target, params)
+													cmd(self, client, target, _params)
 
 							else: # Private Message
 								botCmd = params[0]
-								params = params[1:]
+								_params = params[1:]
 
 								if botCmd.startswith(self.triggers[0]):
 									if client[2] in self.admins: # Admin trigger
@@ -179,19 +179,19 @@ class newClient(asyncore.dispatcher):
 										for mod in modules.dbmods:
 											if hasattr(mod, 'tpa_%s' % botCmd[1:]):
 												cmd = getattr(mod, 'tpa_%s' % botCmd[1:])
-												threader(cmd, (self, client, params))
+												threader(cmd, (self, client, _params))
 											elif hasattr(mod, 'pa_%s' % botCmd[1:]):
 												cmd = getattr(mod, 'pa_%s' % botCmd[1:])
-												cmd(self, client, params)
+												cmd(self, client, _params)
 
 								else: # Public Private Commands don't require a trigger.
 									for mod in modules.dbmods:
 										if hasattr(mod, 'tpp_%s' % botCmd):
 											cmd = getattr(mod, 'tpp_%s' % botCmd)
-											threader(cmd, (self, client, params))
+											threader(cmd, (self, client, _params))
 										elif hasattr(mod, 'pp_%s' % botCmd):
 											cmd = getattr(mod, 'pp_%s' % botCmd)
-											cmd(self, client, params)
+											cmd(self, client, _params)
 
 						
 						# if we're here, Dave doesn't anything useful in the core, so maul the parameters
