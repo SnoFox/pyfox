@@ -108,55 +108,55 @@ class newClient(asyncore.dispatcher):
 
 						if line[1] == 'PRIVMSG': # What we need! Finally.
 
-									if line[2].startswith('#'): # Channel
-										botCmd = line[3].strip(':')
-										params = line[4:]
+							if line[2].startswith('#'): # Channel
+								botCmd = line[3].strip(':')
+								params = line[4:]
 
-										if len(botCmd) > 1:
-											trigger = botCmd[0]
+								if len(botCmd) > 1:
+									trigger = botCmd[0]
 
-											if trigger in self.config['triggers']:
-												if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
-													for mod in modules.dbmods:
-														if hasattr(mod, 'tca_%s' % botCmd[1:]):
-															cmd = getattr(mod, 'tca_%s' % botCmd[1:])
-															threader(cmd, (self, client, line[2], params))
-														elif hasattr(mod, 'ca_%s' % botCmd[1:]):
-															cmd = getattr(mod, 'ca_%s' % botCmd[1:])
-															cmd(self, client, line[2], params)
-
-												elif trigger == self.config['triggers'][1]: # Public trigger
-													for mod in modules.dbmods:
-														if hasattr(mod, 'tcp_%s' % botCmd[1:]):
-															cmd = getattr(mod, 'tcp_%s' % botCmd[1:])
-															threader(cmd, (self, client, line[2], params))
-														elif hasattr(mod, 'cp_%s' % botCmd[1:]):
-															cmd = getattr(mod, 'cp_%s' % botCmd[1:])
-															cmd(self, client, line[2], params)
-
-									else: # Private Message
-										botCmd = line[3].strip(':')
-										params = line[4:]
-
-										if botCmd.startswith(self.config['triggers'][0]):
-											if client[2] in self.config['admins']: # Admin trigger
-
-												for mod in modules.dbmods:
-													if hasattr(mod, 'tpa_%s' % botCmd[1:]):
-														cmd = getattr(mod, 'tpa_%s' % botCmd[1:])
-														threader(cmd, (self, client, params))
-													elif hasattr(mod, 'pa_%s' % botCmd[1:]):
-														cmd = getattr(mod, 'pa_%s' % botCmd[1:])
-														cmd(self, client, params)
-
-										else: # Public Private Commands don't require a trigger.
+									if trigger in self.config['triggers']:
+										if trigger == self.config['triggers'][0] and client[2] in self.config['admins']: # Admin trigger
 											for mod in modules.dbmods:
-												if hasattr(mod, 'tpp_%s' % botCmd):
-													cmd = getattr(mod, 'tpp_%s' % botCmd)
-													threader(cmd, (self, client, params))
-												elif hasattr(mod, 'pp_%s' % botCmd):
-													cmd = getattr(mod, 'pp_%s' % botCmd)
-													cmd(self, client, params)
+												if hasattr(mod, 'tca_%s' % botCmd[1:]):
+													cmd = getattr(mod, 'tca_%s' % botCmd[1:])
+													threader(cmd, (self, client, line[2], params))
+												elif hasattr(mod, 'ca_%s' % botCmd[1:]):
+													cmd = getattr(mod, 'ca_%s' % botCmd[1:])
+													cmd(self, client, line[2], params)
+
+										elif trigger == self.config['triggers'][1]: # Public trigger
+											for mod in modules.dbmods:
+												if hasattr(mod, 'tcp_%s' % botCmd[1:]):
+													cmd = getattr(mod, 'tcp_%s' % botCmd[1:])
+													threader(cmd, (self, client, line[2], params))
+												elif hasattr(mod, 'cp_%s' % botCmd[1:]):
+													cmd = getattr(mod, 'cp_%s' % botCmd[1:])
+													cmd(self, client, line[2], params)
+
+							else: # Private Message
+								botCmd = line[3].strip(':')
+								params = line[4:]
+
+								if botCmd.startswith(self.config['triggers'][0]):
+									if client[2] in self.config['admins']: # Admin trigger
+
+										for mod in modules.dbmods:
+											if hasattr(mod, 'tpa_%s' % botCmd[1:]):
+												cmd = getattr(mod, 'tpa_%s' % botCmd[1:])
+												threader(cmd, (self, client, params))
+											elif hasattr(mod, 'pa_%s' % botCmd[1:]):
+												cmd = getattr(mod, 'pa_%s' % botCmd[1:])
+												cmd(self, client, params)
+
+								else: # Public Private Commands don't require a trigger.
+									for mod in modules.dbmods:
+										if hasattr(mod, 'tpp_%s' % botCmd):
+											cmd = getattr(mod, 'tpp_%s' % botCmd)
+											threader(cmd, (self, client, params))
+										elif hasattr(mod, 'pp_%s' % botCmd):
+											cmd = getattr(mod, 'pp_%s' % botCmd)
+											cmd(self, client, params)
 
 						for mod in modules.dbmods:
 
