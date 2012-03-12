@@ -92,6 +92,10 @@ class newClient(asyncore.dispatcher):
 						command = line[1]
 						target = line[2]
 						params = line[3:]
+						if params.startswith( ':' ):
+							# Strip the leading colon here instead of in a thousand
+							# other places in the code...
+							params = params[1:]
 
 						# Server or user-sourced? Also, give it an ident@address
 						client = source.split( '!', 2 )
@@ -106,7 +110,8 @@ class newClient(asyncore.dispatcher):
 							# totally saving about .2ms here
 							del address
 
-						if line[1] == 'PRIVMSG': # What we need! Finally.
+						if command == 'PRIVMSG': # What we need! Finally.
+							#:SnoFox!~SnoFox@is.in-addr.arpa PRIVMSG #ext3 :Kiba ftw! :'D
 
 							try:
 								if target[0] in self.isupport['CHANTYPES']:
@@ -120,8 +125,8 @@ class newClient(asyncore.dispatcher):
 								chanmsg = False
 
 							if chanmsg:
-								botCmd = line[3].strip(':')
-								params = line[4:]
+								botCmd = params[1]
+								params = params[2:]
 
 								if len(botCmd) > 1:
 									trigger = botCmd[0]
@@ -131,23 +136,23 @@ class newClient(asyncore.dispatcher):
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tca_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'tca_%s' % botCmd[1:])
-													threader(cmd, (self, client, line[2], params))
+													threader(cmd, (self, client, target, params))
 												elif hasattr(mod, 'ca_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'ca_%s' % botCmd[1:])
-													cmd(self, client, line[2], params)
+													cmd(self, client, target, params)
 
 										elif trigger == self.config['triggers'][1]: # Public trigger
 											for mod in modules.dbmods:
 												if hasattr(mod, 'tcp_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'tcp_%s' % botCmd[1:])
-													threader(cmd, (self, client, line[2], params))
+													threader(cmd, (self, client, target, params))
 												elif hasattr(mod, 'cp_%s' % botCmd[1:]):
 													cmd = getattr(mod, 'cp_%s' % botCmd[1:])
-													cmd(self, client, line[2], params)
+													cmd(self, client, target, params)
 
 							else: # Private Message
-								botCmd = line[3].strip(':')
-								params = line[4:]
+								botCmd = params[1]
+								params = params[2:]
 
 								if botCmd.startswith(self.config['triggers'][0]):
 									if client[2] in self.config['admins']: # Admin trigger
@@ -171,15 +176,12 @@ class newClient(asyncore.dispatcher):
 
 						for mod in modules.dbmods:
 
-							if not client:
-								client = list(line[0])
-
-							if hasattr(mod, 'tsr_%s' % line[1].lower()):
-								cmd = getattr(mod, 'tsr_%s' % line[1].lower())
-								threader(cmd, (self, client, line[2:]))
-							elif hasattr(mod, 'sr_%s' % line[1].lower()):
-								cmd = getattr(mod, 'sr_%s' % line[1].lower())
-								cmd(self, client, line[2:])
+							if hasattr(mod, 'tsr_%s' % command.lower() ):
+								cmd = getattr(mod, 'tsr_%s' % command.lower())
+								threader(cmd, (self, client, [ target, params ] ))
+							elif hasattr(mod, 'sr_%s' % command.lower()):
+								cmd = getattr(mod, 'sr_%s' % command.lower())
+								cmd(self, client, [ target, params ] )
 
 	def handle_check(self):
 		while True:
