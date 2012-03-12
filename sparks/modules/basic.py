@@ -180,14 +180,14 @@ def sr_mode(irc, client, params):
 							cmd( irc, client, target, adding, None )
 			else:
 				# Usermode get
-                # IRCds don't provide us with a way to get params like RPL_ISUPPORT CHANMODES
-                # so we won't support usermodes with params. I don't know of any umodes with
-                # params anyway --SnoFox
-                for n, mod in enumerate(dbmods):
-                    if hasattr( mod, 'sr_umode_%s' % char ):
-                        cmd = getattr( mod, 'sr_umode_%s' % char )
-                        cmd( irc, client, target, adding, None )
-                
+				# IRCds don't provide us with a way to get params like RPL_ISUPPORT CHANMODES
+				# so we won't support usermodes with params. I don't know of any umodes with
+				# params anyway --SnoFox
+				for n, mod in enumerate(dbmods):
+					if hasattr( mod, 'sr_umode_%s' % char ):
+						cmd = getattr( mod, 'sr_umode_%s' % char )
+						cmd( irc, client, target, adding, None )
+				
 
 
 
