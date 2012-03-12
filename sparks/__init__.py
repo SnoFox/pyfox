@@ -119,9 +119,9 @@ class newClient(asyncore.dispatcher):
 								else:
 									chanmsg = False
 							except NameError:
-								print "ERROR: Got a PRIVMSG before proper registration. Go slap the server dev. :("
-								print "       We need the RPL_ISUPPORT numeric (005) with the CHANTYPES value to"
-								print "       properly handle channel messages."
+								#print "ERROR: Got a PRIVMSG before proper registration. Go slap the server dev. :("
+								#print "       We need the RPL_ISUPPORT numeric (005) with the CHANTYPES value to"
+								#print "       properly handle channel messages."
 								chanmsg = False
 
 							if chanmsg:
