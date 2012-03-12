@@ -39,7 +39,6 @@ def sr_005(irc, client, params):
 	while x < 5:
 		# literally "hack" off ":are supported by this server"
 		# Will break on broken, non-RFC-following servers
-		print "pop %d" % x
 		params.pop()
 		x += 1
 
