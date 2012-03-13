@@ -130,7 +130,7 @@ class newClient(asyncore.dispatcher):
 							if client[0] == self.nick:
 								self.nick = target
 
-						if command == 'PRIVMSG': # What we need! Finally.
+						if command == 'PRIVMSG' and hasattr(self, 'isupport'): # What we need! Finally.
 							#:SnoFox!~SnoFox@is.in-addr.arpa PRIVMSG #ext3 :Kiba ftw! :'D
 
 							try:
