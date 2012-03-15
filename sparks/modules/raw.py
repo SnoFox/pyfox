@@ -1,3 +1,5 @@
+from asyncore import socket_map as sockets
+
 def ca_raw(irc, client, channel, params):
 	if len(params) > 0:
 		irc.push(' '.join(params))
