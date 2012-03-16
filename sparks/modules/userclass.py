@@ -18,9 +18,6 @@ class User:
 		self.__gecos = None # The user's gecos/realname field
 		self.__channels = dict() # dicts where chan is the key and the modes they have in it (+ohv ... ) is the value
 
-		if not hasattr( irc, "userList" ):
-			irc.userList = []
-
 		irc.userList.append( self )
 
 	def changeNick( self, newNick ):
@@ -72,4 +69,7 @@ class User:
 
 	def getChans( self ):
 		return self.__channels
+
+def modinit( irc ):
+	irc.userList = []
 
