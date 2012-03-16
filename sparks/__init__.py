@@ -32,6 +32,14 @@ class newClient(asyncore.dispatcher):
 		if config.get( 'serverpass' ):
 			self.serverpass = config['serverpass']
 
+		for mod in modules.dbmods:
+			if hasattr( mod, 'tmodinit' ):
+				cmd = getattr( mod, 'tmodinit' )
+				threader( cmd, self )
+			elif hasattr( mod, 'modinit' ):
+				cmd = getattr( mod, 'modinit' )
+				cmd( self )
+
 		# In a nutshell, Get a list of IPs for that domain and connect to it.
 		socket_data = socket.getaddrinfo(self.server, int(self.port), 0, 1)[0]
 		self.create_socket(socket_data[0], socket_data[1])
