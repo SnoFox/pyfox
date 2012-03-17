@@ -96,10 +96,13 @@ def sr_join( irc, client, chan, null ):
 			user.addChan( chan.lower() )
 
 def sr_part( irc, client, chan, reason ):
-	if client[0] == irc.nick:
-		# XXX: clean up the userlist by iterating through the userlist and deleting
-		# all users who were just in that channel with the bot
-		pass
+	if client[0] == irc.nick: # I left the channel
+		tempList = list( irc.userList )
+		for user in tempList:
+			if chan in user.getChans():
+				user.delChan( chan )
+				if len( user.getChans() ) == 0:
+					irc.userList.remove( user )
 	else:
 		user = None
 		for thisUser in irc.userList:
@@ -127,17 +130,25 @@ def sr_quit( irc, client, reason, null ):
 
 def sr_kick( irc, client, chan, params ):
 	victim = params[0]
-	
-	user = None
-	for thisUser in irc.userList:
-		if thisUser.getNick() == victim:
-			# XXX: temporary until I do proper case checks
-			user = thisUser
-			break
-	if not user:
-		print "Error: got a kick for user we don't know about: %s kicking %s in %s" % ( client[0], victim, chan)
-	else:
-		user.delChan( chan.lower() )
+
+	if victim == irc.nick: # I left the channel
+		tempList = list( irc.userList )
+		for user in tempList:
+			if chan in user.getChans():
+				user.delChan( chan )
+				if len( user.getChans() ) == 0:
+					irc.userList.remove( user )
+	else:	
+		user = None
+		for thisUser in irc.userList:
+			if thisUser.getNick() == victim:
+				# XXX: temporary until I do proper case checks
+				user = thisUser
+				break
+		if not user:
+			print "Error: got a kick for user we don't know about: %s kicking %s in %s" % ( client[0], victim, chan)
+		else:
+			user.delChan( chan.lower() )
 
 def sr_nick( irc, client, newNick, null ):
 	user = None
@@ -182,13 +193,6 @@ def sr_352( irc, client, target, params ):
 
 	user.addChan( chan, prefix )
 
-
-def ca_ulist( irc, client, chan, params ):
-	irc.privmsg( chan, "I know about the following users: " )
-	for thisUser in irc.userList:
-		irc.privmsg( chan, 'Nick: %s u@h: %s@%s Real: %s' % ( thisUser.getNick(), thisUser.getIdent(), thisUser.getAddress(), thisUser.getGecos() ) )
-		irc.privmsg( chan, 'Chan info: %s' % thisUser.getChans() )
-	irc.privmsg( chan, "== End of userlist ==" )
 
 
 def sr_mode(irc, client, target, params):
@@ -252,6 +256,14 @@ def sr_mode(irc, client, target, params):
 				# not a fuck was given that mode
 				pass
 
+
+def ca_ulist( irc, client, chan, params ):
+	irc.privmsg( chan, "I know about the following users: " )
+	for thisUser in irc.userList:
+		irc.privmsg( chan, 'Nick: %s u@h: %s@%s Real: %s' % ( thisUser.getNick(), thisUser.getIdent(), thisUser.getAddress(), thisUser.getGecos() ) )
+		irc.privmsg( chan, 'Chan info: %s' % thisUser.getChans() )
+	irc.privmsg( chan, "== End of userlist ==" )
+
 '''
 Behavior notes:
 	- Learning a user from join will not fill in their GECOS - could change in future
@@ -259,7 +271,6 @@ Behavior notes:
 		- this means Sno|Fox and Sno\Fox; and Sno[Fox] and Sno{Fox} are "different" nicks,
 			which is incorrect behavior for IRC.
 '''
-
 
 #######
 # EOF #
