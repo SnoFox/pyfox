@@ -8,6 +8,7 @@
 ########################
 
 from time import time
+from sparks.modules.basic import ircStrCmp, ircStrLower
 
 class User:
 
@@ -79,13 +80,14 @@ def modinit( irc ):
 	irc.userList = []
 
 def sr_join( irc, client, chan, null ):
+	chan = chan.strip( ":" )
+
 	if client[0] == irc.nick:
 		irc.push( 'WHO %s' % chan )
 	else:
 		user = None
 		for thisUser in irc.userList:
-			if thisUser.getNick() == client[0]:
-				# XXX: temporary until I do proper case checks
+			if ircStrCmp( irc, thisUser.getNick(), client[0] ):
 				user = thisUser
 				break
 
@@ -93,9 +95,10 @@ def sr_join( irc, client, chan, null ):
 			user = User( irc, client[0] )
 			user.setIdent( client[1] )
 			user.setAddress( client[2] )
-			user.addChan( chan.lower() )
+			user.addChan( ircStrLower( irc, chan ) )
 
 def sr_part( irc, client, chan, reason ):
+	chan = chan.strip( ":" )
 	if client[0] == irc.nick: # I left the channel
 		tempList = list( irc.userList )
 		for user in tempList:
@@ -106,20 +109,18 @@ def sr_part( irc, client, chan, reason ):
 	else:
 		user = None
 		for thisUser in irc.userList:
-			if thisUser.getNick() == client[0]:
-				# XXX: temporary until I do proper case checks
+			if ircStrCmp( irc, thisUser.getNick(), client[0] ):
 				user = thisUser
 				break
 		if not user:
 			print "Error: got a part for user we don't know about: %s!%s@%s on %s" % ( client[0], client[1], client[2], chan )
 		else:
-			user.delChan( chan.lower() )
+			user.delChan( ircStrLower( irc, chan ) )
 
 def sr_quit( irc, client, reason, null ):
 	user = None
 	for thisUser in irc.userList:
-		if thisUser.getNick() == client[0]:
-			# XXX: temporary until I do proper case checks
+		if ircStrCmp( irc, thisUser.getNick(), client[0] ):
 			user = thisUser
 			break
 	if not user:
@@ -129,6 +130,7 @@ def sr_quit( irc, client, reason, null ):
 
 
 def sr_kick( irc, client, chan, params ):
+	chan = ircStrLower( irc, chan.strip( ":" ) )
 	victim = params[0]
 
 	if victim == irc.nick: # I left the channel
@@ -141,19 +143,18 @@ def sr_kick( irc, client, chan, params ):
 	else:	
 		user = None
 		for thisUser in irc.userList:
-			if thisUser.getNick() == victim:
-				# XXX: temporary until I do proper case checks
+			if ircStrCmp( irc, thisUser.getNick(), victim ):
 				user = thisUser
 				break
 		if not user:
 			print "Error: got a kick for user we don't know about: %s kicking %s in %s" % ( client[0], victim, chan)
 		else:
-			user.delChan( chan.lower() )
+			user.delChan( ircStrLower( irc, chan ) )
 
 def sr_nick( irc, client, newNick, null ):
 	user = None
 	for thisUser in irc.userList:
-		if thisUser.getNick() == client[0]:
+		if ircStrCmp( irc, thisUser.getNick(), client[0] ):
 			user = thisUser
 			break
 	if user:
@@ -164,7 +165,7 @@ def sr_nick( irc, client, newNick, null ):
 
 def sr_352( irc, client, target, params ):
 # >> :dualcore.ext3.net 352 PyFox #foxtest ~SnoFox is.in-addr.arpa void.ext3.net SnoFox H*! :2 Fox of Sno
-	chan = params[0]
+	chan = ircStrLower( irc, params[0] )
 	ident = params[1]
 	address = params[2]
 	nick = params[4]
@@ -182,7 +183,7 @@ def sr_352( irc, client, target, params ):
 
 	user = None
 	for thisUser in irc.userList:
-		if thisUser.getNick() == nick:
+		if ircStrCmp( irc, thisUser.getNick(), nick ):
 			user = thisUser
 			break
 	if not user:
@@ -203,6 +204,7 @@ def sr_mode(irc, client, target, params):
 
 	if target[0] in irc.isupport['CHANTYPES']:
 		chmode = True 
+		target = ircStrLower( irc, target )
 	else:
 		chmode = False
 	
@@ -229,7 +231,7 @@ def sr_mode(irc, client, target, params):
 					# We only care about prefix modes here
 					user = None
 					for thisUser in irc.userList:
-						if thisUser.getNick() == params[ paramNum ]:
+						if ircStrCmp( irc, thisUser.getNick(), params[ paramNum ] ):
 							user = thisUser
 
 					if user:
@@ -245,6 +247,9 @@ def sr_mode(irc, client, target, params):
 								if not thisPrefix == char:
 									newPrefixes += char
 							user.setPrefix( target, newPrefixes )
+
+					else: 
+						print "Error: nick %s in %s got a prefix, but I don't know who he is" % ( params[ paramNum ], target )
 
 					paramNum += 1
 					continue
