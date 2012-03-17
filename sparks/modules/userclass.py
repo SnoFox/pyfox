@@ -82,7 +82,7 @@ def sr_join( irc, client, chan, null ):
 	else:
 		user = None
 		for thisUser in irc.userList:
-			if thisUser.getNick().lower() == client[0].lower():
+			if thisUser.getNick() == client[0]:
 				# XXX: temporary until I do proper case checks
 				user = thisUser
 				break
@@ -101,7 +101,7 @@ def sr_part( irc, client, chan, reason ):
 	else:
 		user = None
 		for thisUser in irc.userList:
-			if thisUser.getNick().lower() == client[0].lower():
+			if thisUser.getNick() == client[0]:
 				# XXX: temporary until I do proper case checks
 				user = thisUser
 				break
@@ -116,7 +116,7 @@ def sr_part( irc, client, chan, reason ):
 def sr_quit( irc, client, reason, null ):
 	user = None
 	for thisUser in irc.userList:
-		if thisUser.getNick().lower() == client[0].lower():
+		if thisUser.getNick() == client[0]:
 			# XXX: temporary until I do proper case checks
 			user = thisUser
 			break
@@ -131,7 +131,7 @@ def sr_kick( irc, client, chan, params ):
 	
 	user = None
 	for thisUser in irc.userList:
-		if thisUser.getNick().lower() == victim.lower():
+		if thisUser.getNick() == victim:
 			# XXX: temporary until I do proper case checks
 			user = thisUser
 			break
@@ -163,7 +163,7 @@ def sr_352( irc, client, target, params ):
 
 	user = None
 	for thisUser in irc.userList:
-		if thisUser.getNick().lower() == nick.lower():
+		if thisUser.getNick() == nick:
 			user = thisUser
 			break
 	if not user:
