@@ -37,19 +37,22 @@ class User:
 		self.__gecos = name
 
 	def addChan( self, chan, prefixes = "" ):
-		self.__channels.update( { chan: prefixes } )
+		if not chan in self.__channels:
+			self.__channels.update( { chan: prefixes } )
+		else:
+			print "Error: Got duplicate join for %s in %s" % ( self.__nick, chan )
 
 	def setPrefix( self, chan, prefixes ):
 		try:
 			self.__channels[chan] = prefixes
 		except NameError:
-			print "Got info for user %s in channel %s, but we don't know about that channel" % (self.nick, chan)
+			print "Error: Got info for user %s in channel %s, but we don't know about that channel" % ( self.nick, chan )
 
 	def delChan( self, chan ):
 		try:
 			del self.__channels[chan]
 		except NameError:
-			print "Got a part for user %s in chan %s, but they weren't there in the first place" % (self.nick, chan)
+			print "Error: Got a part/kick for user %s in chan %s, but they weren't there in the first place" % ( self.nick, chan )
 
 	def getNick( self ):
 		return self.__nick
@@ -94,7 +97,7 @@ def sr_join( irc, client, chan, null ):
 
 def sr_part( irc, client, chan, reason ):
 	if client[0] == irc.nick:
-		# clean up the userlist by iterating through the userlist and deleting
+		# XXX: clean up the userlist by iterating through the userlist and deleting
 		# all users who were just in that channel with the bot
 		pass
 	else:
@@ -107,10 +110,7 @@ def sr_part( irc, client, chan, reason ):
 		if not user:
 			print "Error: got a part for user we don't know about: %s!%s@%s on %s" % ( client[0], client[1], client[2], chan )
 		else:
-			try:
-				user.delChan( chan.lower() )
-			except KeyError:
-				print "Error: got a part for user %s on %s, but they weren't there" % ( user.getNick(), chan )
+			user.delChan( chan.lower() )
 
 def sr_quit( irc, client, reason, null ):
 	user = None
@@ -137,11 +137,7 @@ def sr_kick( irc, client, chan, params ):
 	if not user:
 		print "Error: got a kick for user we don't know about: %s kicking %s in %s" % ( client[0], victim, chan)
 	else:
-		try:
-			user.delChan( chan.lower() )
-		except KeyError:
-			print "Error: user %s was kicked from %s, but they weren't there" % ( user.getNick(), chan )
-
+		user.delChan( chan.lower() )
 
 def sr_nick( irc, client, newNick, null ):
 	user = None
@@ -258,13 +254,10 @@ def sr_mode(irc, client, target, params):
 
 '''
 Behavior notes:
-	- Learning a user from join will not fill in their GECOS
-	- Nicks are compared via basic checks; changing them to lowercase and matching
+	- Learning a user from join will not fill in their GECOS - could change in future
+	- Nicks are compared via basic checks
 		- this means Sno|Fox and Sno\Fox; and Sno[Fox] and Sno{Fox} are "different" nicks,
 			which is incorrect behavior for IRC.
-
-TODO:
-	- Mode changes do not work
 '''
 
 
