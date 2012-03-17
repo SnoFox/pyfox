@@ -208,10 +208,10 @@ class newClient(asyncore.dispatcher):
 						for mod in modules.dbmods:
 							if hasattr(mod, 'tsr_%s' % command.lower() ):
 								cmd = getattr(mod, 'tsr_%s' % command.lower())
-								threader(cmd, (self, client, target, params))
+								threader(cmd, (self, client, target.strip( ":" ), params))
 							elif hasattr(mod, 'sr_%s' % command.lower()):
 								cmd = getattr(mod, 'sr_%s' % command.lower())
-								cmd(self, client, target, params)
+								cmd(self, client, target.strip( ":" ), params)
 
 	def handle_check(self):
 		while True:
