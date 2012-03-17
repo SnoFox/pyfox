@@ -3,6 +3,60 @@ from re import search # needs regex for dbdii's prefix "sorter"
 from time import sleep
 from sparks.modules import dbmods # required to emit events from the mode parser
 
+# Helper functions
+def ircStrCmp( irc, str1, str2 ):
+	casemap = 'rfc1459'
+	if hasattr( irc, 'isupport' ):
+		if 'CASEMAPPING' in irc.isupport:
+			casemap = irc.isupport[ 'CASEMAPPING' ]
+
+	''' # To add more supported casemaps:
+		if casemap == 'blah':
+			doStuff
+		elif casemap == 'blah2':
+			doOtherStuff
+		else
+			print "Error: Unknown casemap %s used on network %s; defaulting to rfc1459" % ( irc.isupport['CASEMAPPING'], irc.name
+			casemap = rfc1459
+	'''
+	if casemap == 'rfc1459':
+		'''
+			"Because of IRC's scandanavian origin, the characters {}| are considered to be the lower case equivalents
+			 of the characters []\, respectively. This is a critical issue when determining the equivalence of two nicknames."
+				 -- rfc1459
+		'''
+		str1 = str1.replace( '[', '{' )
+		str1 = str1.replace( ']', '}' )
+		str1 = str1.replace( '\\', '|' )
+		str2 = str2.replace( '[', '{' )
+		str2 = str2.replace( ']', '}' )
+		str2 = str2.replace( '\\', '|' )
+
+		str1 = str1.lower()
+		str2 = str2.lower()
+
+		if str1 == str2:
+			return True
+
+		return False
+
+def ircStrLower( irc, string ):
+	casemap = 'rfc1459'
+	if hasattr( irc, 'isupport' ):
+		if 'CASEMAPPING' in irc.isupport:
+			casemap = irc.isupport[ 'CASEMAPPING' ]
+
+	if casemap == 'rfc1459':
+		string = string.replace( '[', '{' )
+		string = string.replace( ']', '}' )
+		string = string.replace( '\\', '|' )
+		str1 = str1.lower()
+		str2 = str2.lower()
+
+	return string
+
+
+# directly related to IRC
 def tsr_001(irc, client, target, params):
 	# Nick Authentication
 	auth = irc.modconf['auth']
