@@ -46,13 +46,13 @@ class User:
 		try:
 			self.__channels[chan] = prefixes
 		except NameError:
-			print "Error: Got info for user %s in channel %s, but we don't know about that channel" % ( self.nick, chan )
+			print "Error: Got info for user %s in channel %s, but we don't know about that channel" % ( self.__nick, chan )
 
 	def delChan( self, chan ):
 		try:
 			del self.__channels[chan]
 		except NameError:
-			print "Error: Got a part/kick for user %s in chan %s, but they weren't there in the first place" % ( self.nick, chan )
+			print "Error: Got a part/kick for user %s in chan %s, but they weren't there in the first place" % ( self.__nick, chan )
 
 	def getNick( self ):
 		return self.__nick
