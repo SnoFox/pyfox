@@ -272,9 +272,6 @@ def ca_ulist( irc, client, chan, params ):
 '''
 Behavior notes:
 	- Learning a user from join will not fill in their GECOS - could change in future
-	- Nicks are compared via basic checks
-		- this means Sno|Fox and Sno\Fox; and Sno[Fox] and Sno{Fox} are "different" nicks,
-			which is incorrect behavior for IRC.
 '''
 
 #######

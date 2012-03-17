@@ -16,7 +16,7 @@ def ircStrCmp( irc, str1, str2 ):
 		elif casemap == 'blah2':
 			doOtherStuff
 		else
-			print "Error: Unknown casemap %s used on network %s; defaulting to rfc1459" % ( irc.isupport['CASEMAPPING'], irc.name
+			print "Error: Unknown casemap %s used on network %s; defaulting to rfc1459" % ( irc.isupport['CASEMAPPING'], irc.name )
 			casemap = rfc1459
 	'''
 	if casemap == 'rfc1459':
