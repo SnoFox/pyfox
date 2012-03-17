@@ -154,11 +154,17 @@ def sr_352( irc, client, target, params ):
 
 	# XXX: sort out prefixes and add them
 
-	user = User( irc, nick )
+	user = None
+	for thisUser in irc.userList:
+		if thisUser.getNick().lower() == nick.lower():
+			user = thisUser
+			break
+	if not user:
+		user = User( irc, nick )
+		user.setIdent( ident )
+		user.setAddress( address )
+		user.setGecos( gecos )
 
-	user.setIdent( ident )
-	user.setAddress( address )
-	user.setGecos( gecos )
 	user.addChan( chan, None )
 	
 
@@ -183,6 +189,7 @@ TODO:
 	- Nick changes are currently not supported
 	- Mode changes do not work
 	- Prefixes don't work
+	- Fix addition of duplicates
 '''
 
 
