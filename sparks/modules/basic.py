@@ -132,8 +132,6 @@ def sr_mode(irc, client, target, params):
 	# Sends out mode events for other modules to use
 	# - SnoFox
 
-	# First of all, channel mode or user mode?
-
 	if target[0] in irc.isupport['CHANTYPES']:
 		irc.push("NAMES %s" % target)
 		chmode = True 
@@ -147,27 +145,23 @@ def sr_mode(irc, client, target, params):
 	# then later sends us a mode line that doesn't agree with our knowledge of modes
 	# That ... Should probably be fixed.
 	for char in params[0]:
-		# Are we adding or subtracting the mode?
 		if char == '+':
 			adding = True
 		elif char == '-':
 			adding = False
 		else:
 			param = None
+
 			if chmode:
-				# Check to see what kind of mode this is
 				if char in irc.typeemodes or char in irc.listmodes or char in irc.typebmodes or (char in irc.typecmodes and adding):
-					# These types of modes have params
-					# Launch events! Woo!
 					for n, mod in enumerate(dbmods):
 						if hasattr( mod, 'sr_chmode_%s' % char ):
 							cmd = getattr( mod, 'sr_chmode_%s' % char )
 							cmd( irc, client, target, adding, params[paramNum] )
+
 					paramNum += 1
 					continue
 				else:
-					# This is a letter, hopefully, or at least a mode.
-					# Fire off an event for it
 					for n, mod in enumerate(dbmods):
 						if hasattr( mod, 'sr_chmode_%s' % char ):
 							cmd = getattr( mod, 'sr_chmode_%s' % char )
