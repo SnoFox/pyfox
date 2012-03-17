@@ -50,8 +50,7 @@ def ircStrLower( irc, string ):
 		string = string.replace( '[', '{' )
 		string = string.replace( ']', '}' )
 		string = string.replace( '\\', '|' )
-		str1 = str1.lower()
-		str2 = str2.lower()
+		string = string.lower()
 
 	return string
 
