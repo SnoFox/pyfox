@@ -36,10 +36,10 @@ class User:
 	def setGecos( self, name ):
 		self.__gecos = name
 
-	def addChan( self, chan, prefixes ):
+	def addChan( self, chan, prefixes = "" ):
 		self.__channels.update( { chan: prefixes } )
 
-	def updateChan( self, chan, prefixes ):
+	def setPrefix( self, chan, prefixes ):
 		try:
 			self.__channels[chan] = prefixes
 		except NameError:
@@ -90,7 +90,7 @@ def sr_join( irc, client, chan, null ):
 			user = User( irc, client[0] )
 			user.setIdent( client[1] )
 			user.setAddress( client[2] )
-			user.addChan( chan.lower(), None )
+			user.addChan( chan.lower() )
 
 def sr_part( irc, client, chan, reason ):
 	if client[0] == irc.nick:
@@ -149,8 +149,8 @@ def sr_nick( irc, client, newNick, null ):
 		if thisUser.getNick() == client[0]:
 			user = thisUser
 			break
-	if not user:
-		user.changeNick( newNick )
+	if user:
+		user.changeNick( newNick.strip( ":" ) )
 	else:
 		print "Error: got nick change for %s -> %s, but we don't know them" % ( client[0], newNick )
 
@@ -195,6 +195,66 @@ def ca_ulist( irc, client, chan, params ):
 	irc.privmsg( chan, "== End of userlist ==" )
 
 
+def sr_mode(irc, client, target, params):
+	# XXX: Icky, code duplication. Could add a prefix-change event to prevent this
+	# Mode parser
+	# Sends out mode events for other modules to use
+	# - SnoFox
+
+	if target[0] in irc.isupport['CHANTYPES']:
+		chmode = True 
+	else:
+		chmode = False
+	
+	adding = True # true = adding a mode; false = removing
+	paramNum = 1  # count of which param we're using 
+
+	# XXX: This will crash the bot if the IRCd lied to us in the 005 version string
+	# then later sends us a mode line that doesn't agree with our knowledge of modes
+	# That ... Should probably be fixed.
+	for char in params[0]:
+		if char == '+':
+			adding = True
+		elif char == '-':
+			adding = False
+		else:
+			param = None
+
+			if chmode:
+				if char in irc.listmodes or char in irc.typebmodes or (char in irc.typecmodes and adding):
+					paramNum += 1
+					continue
+
+				if char in irc.typeemodes:
+					# We only care about prefix modes here
+					user = None
+					for thisUser in irc.userList:
+						if thisUser.getNick() == params[ paramNum ]:
+							user = thisUser
+
+					if user:
+						if adding:
+							prefixes = user.getPrefix( target )
+							if not char in prefixes:
+								prefixes += char
+								user.setPrefix( target, prefixes )
+						else:
+							prefixes = user.getPrefix( target )
+							newPrefixes = ""
+							for thisPrefix in prefixes:
+								if not thisPrefix == char:
+									newPrefixes += char
+							user.setPrefix( target, newPrefixes )
+
+					paramNum += 1
+					continue
+				else:
+					# flag type mode; we don't care here
+					pass
+			else:
+				# Usermode get
+				# not a fuck was given that mode
+				pass
 
 '''
 Behavior notes:
