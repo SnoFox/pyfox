@@ -35,10 +35,10 @@ def ircStrCmp( irc, str1, str2 ):
 		str1 = str1.lower()
 		str2 = str2.lower()
 
-		if str1 == str2:
-			return True
+	if str1 == str2:
+		return True
 
-		return False
+	return False
 
 def ircStrLower( irc, string ):
 	casemap = 'rfc1459'
