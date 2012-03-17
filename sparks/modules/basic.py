@@ -141,8 +141,7 @@ def sr_mode(irc, client, target, params):
 		chmode = False
 	
 	adding = True # true = adding a mode; false = removing
-	paramNum = 2  # count of which param we're using 
-				  # This starts at 2 due to Sparks' garbage in the params list :\
+	paramNum = 1  # count of which param we're using 
 
 	# XXX: This will crash the bot if the IRCd lied to us in the 005 version string
 	# then later sends us a mode line that doesn't agree with our knowledge of modes
