@@ -25,9 +25,8 @@ class User:
 		irc.userList.append( self )
 
 	def changeNick( self, newNick ):
-		# Iterate through our list of objects to look for duplicates
-		# If no dupes, just set self.nick to newNick, remove the old entry, add a new one self.__nick = newNick 
-		pass
+		self.__nick = newNick
+
 	def setAddress( self, address ):
 		self.__address = address
 
@@ -106,7 +105,7 @@ def sr_part( irc, client, chan, reason ):
 				user = thisUser
 				break
 		if not user:
-			print "Error: got a part for user we don't know about: %s!%s@%s on %s" % (client[0],client[1],client[2],chan)
+			print "Error: got a part for user we don't know about: %s!%s@%s on %s" % ( client[0], client[1], client[2], chan )
 		else:
 			try:
 				user.delChan( chan.lower() )
@@ -121,7 +120,7 @@ def sr_quit( irc, client, reason, null ):
 			user = thisUser
 			break
 	if not user:
-		print "Error: got a quit for user we don't know about: %s!%s@%s" % (client[0],client[1],client[2])
+		print "Error: got a quit for user we don't know about: %s!%s@%s" % ( client[0], client[1], client[2] )
 	else:
 		irc.userList.remove( user )
 
@@ -136,12 +135,25 @@ def sr_kick( irc, client, chan, params ):
 			user = thisUser
 			break
 	if not user:
-		print "Error: got a kick for user we don't know about: %s kicking %s in %s" % (client[0],victim,chan)
+		print "Error: got a kick for user we don't know about: %s kicking %s in %s" % ( client[0], victim, chan)
 	else:
 		try:
 			user.delChan( chan.lower() )
 		except KeyError:
 			print "Error: user %s was kicked from %s, but they weren't there" % ( user.getNick(), chan )
+
+
+def sr_nick( irc, client, newNick, null ):
+	user = None
+	for thisUser in irc.userList:
+		if thisUser.getNick() == client[0]:
+			user = thisUser
+			break
+	if not user:
+		user.changeNick( newNick )
+	else:
+		print "Error: got nick change for %s -> %s, but we don't know them" % ( client[0], newNick )
+
 
 def sr_352( irc, client, target, params ):
 # >> :dualcore.ext3.net 352 PyFox #foxtest ~SnoFox is.in-addr.arpa void.ext3.net SnoFox H*! :2 Fox of Sno
@@ -173,7 +185,6 @@ def sr_352( irc, client, target, params ):
 		user.setGecos( gecos )
 
 	user.addChan( chan, prefix )
-	
 
 
 def ca_ulist( irc, client, chan, params ):
@@ -193,9 +204,7 @@ Behavior notes:
 			which is incorrect behavior for IRC.
 
 TODO:
-	- Nick changes are currently not supported
 	- Mode changes do not work
-	- Prefixes don't work
 '''
 
 
