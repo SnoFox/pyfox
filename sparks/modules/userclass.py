@@ -152,7 +152,14 @@ def sr_352( irc, client, target, params ):
 	prefix = params[5] # need to be cleaned
 	gecos = ' '.join( params[7:] )
 
-	# XXX: sort out prefixes and add them
+	realPrefix = ""
+	for char in prefix:
+		if char in irc.statusmodes:
+			realPrefix += char
+	# Now translate !@%+ to aohv
+	prefix = ""
+	for thisPrefix in realPrefix:
+		prefix += irc.statusmodes[ thisPrefix ]
 
 	user = None
 	for thisUser in irc.userList:
@@ -165,14 +172,14 @@ def sr_352( irc, client, target, params ):
 		user.setAddress( address )
 		user.setGecos( gecos )
 
-	user.addChan( chan, None )
+	user.addChan( chan, prefix )
 	
 
 
 def ca_ulist( irc, client, chan, params ):
 	irc.privmsg( chan, "I know about the following users: " )
 	for thisUser in irc.userList:
-		irc.privmsg( chan, 'Nick: %s u@h: %s@%s' % (thisUser.getNick(),thisUser.getIdent(),thisUser.getAddress()) )
+		irc.privmsg( chan, 'Nick: %s u@h: %s@%s Real: %s' % ( thisUser.getNick(), thisUser.getIdent(), thisUser.getAddress(), thisUser.getGecos() ) )
 		irc.privmsg( chan, 'Chan info: %s' % thisUser.getChans() )
 	irc.privmsg( chan, "== End of userlist ==" )
 
@@ -189,7 +196,6 @@ TODO:
 	- Nick changes are currently not supported
 	- Mode changes do not work
 	- Prefixes don't work
-	- Fix addition of duplicates
 '''
 
 
