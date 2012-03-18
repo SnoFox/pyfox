@@ -116,6 +116,8 @@ def sr_part( irc, client, chan, reason ):
 			print "Error: got a part for user we don't know about: %s!%s@%s on %s" % ( client[0], client[1], client[2], chan )
 		else:
 			user.delChan( ircStrLower( irc, chan ) )
+			if len( user.getChans() ) == 0:
+				irc.userList.remove( user )
 
 def sr_quit( irc, client, reason, null ):
 	user = None
