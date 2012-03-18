@@ -148,45 +148,12 @@ def sr_005(irc, client, target, params):
 	# } for isupport in params
 # } def sr_005
 
-
-def sr_353(irc, client, target, params):
-	# Create a nicklist for each channel
-	if not hasattr(irc, 'chanlists'):
-		irc.chanlists = {}
-
-	# Coded by _habnabit #python Freenode. Greatly appreciated!
-	ret = {}
-	ret2 = {}
-
-	for nick in params[3:]:
-		nick = nick.lstrip(':')
-		nick_modes = []
-
-		for e, char in enumerate(nick):
-			if char not in irc.statusmodes:
-				ret[nick[e:]] = nick_modes
-				break
-
-			nick_modes.append(irc.statusmodes[char])
-
-	for r in ret:
-		ret2[r] = ''.join(ret[r])
-
-	irc.chanlists[params[2]] = ret2
-
-def sr_part(irc, client, target, params):
-	irc.push("NAMES %s" % target)
-
-def sr_join(irc, client, target, params):
-	irc.push("NAMES %s" % target)
-
 def sr_mode(irc, client, target, params):
 	# Mode parser
 	# Sends out mode events for other modules to use
 	# - SnoFox
 
 	if target[0] in irc.isupport['CHANTYPES']:
-		irc.push("NAMES %s" % target)
 		chmode = True 
 	else:
 		chmode = False
@@ -230,8 +197,3 @@ def sr_mode(irc, client, target, params):
 						cmd( irc, client, target, adding, None )
 				
 
-
-
-
-def ca_chanlist(irc, client, channel, params):
-	irc.privmsg(channel, irc.chanlists[channel])
