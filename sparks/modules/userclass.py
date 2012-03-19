@@ -46,13 +46,13 @@ class User:
 	def setPrefix( self, chan, prefixes ):
 		try:
 			self.__channels[chan] = prefixes
-		except NameError:
+		except KeyError:
 			print "Error: Got info for user %s in channel %s, but we don't know about that channel" % ( self.__nick, chan )
 
 	def delChan( self, chan ):
 		try:
 			del self.__channels[chan]
-		except NameError:
+		except KeyError:
 			print "Error: Got a part/kick for user %s in chan %s, but they weren't there in the first place" % ( self.__nick, chan )
 
 	def getNick( self ):
@@ -95,7 +95,8 @@ def sr_join( irc, client, chan, null ):
 			user = User( irc, client[0] )
 			user.setIdent( client[1] )
 			user.setAddress( client[2] )
-			user.addChan( ircStrLower( irc, chan ) )
+
+		user.addChan( ircStrLower( irc, chan ) )
 
 def sr_part( irc, client, chan, reason ):
 	chan = chan.strip( ":" )
