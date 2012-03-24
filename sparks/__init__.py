@@ -27,10 +27,11 @@ class newClient(asyncore.dispatcher):
 		self.server = config['server']
 		self.port = config['port']
 		self.admins = config['admins']
-		self.nick = config['nick']
 		self.modconf = config['modules']
 		if config.get( 'serverpass' ):
 			self.serverpass = config['serverpass']
+
+		self.isupport = dict() # initialize this here since this is part of the core
 
 		for mod in modules.dbmods:
 			if hasattr( mod, 'tmodinit' ):
@@ -105,7 +106,7 @@ class newClient(asyncore.dispatcher):
 
 						if line[1] == 'PONG':
 							self.hang -= 1
-					else:	
+					else:   
 						# "relayed" (actual IRC stuff)
 						source = line[0][1:]
 						command = line[1]
@@ -138,18 +139,13 @@ class newClient(asyncore.dispatcher):
 							if client[0] == self.nick:
 								self.nick = target
 
-						if command == 'PRIVMSG' and hasattr(self, 'isupport'): # What we need! Finally.
+						if command == 'PRIVMSG': # What we need! Finally.
 							#:SnoFox!~SnoFox@is.in-addr.arpa PRIVMSG #ext3 :Kiba ftw! :'D
 
-							try:
-								if target[0] in self.isupport['CHANTYPES']:
-									chanmsg = True
-								else:
-									chanmsg = False
-							except NameError:
-								#print "ERROR: Got a PRIVMSG before proper registration. Go slap the server dev. :("
-								#print "       We need the RPL_ISUPPORT numeric (005) with the CHANTYPES value to"
-								#print "       properly handle channel messages."
+							chantypes = self.isupport.get( 'CHANTYPES', '' ) 
+							if target[0] in chantypes:
+								chanmsg = True
+							else:
 								chanmsg = False
 
 							if chanmsg:
