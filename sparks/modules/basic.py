@@ -3,6 +3,59 @@ from re import search # needs regex for dbdii's prefix "sorter"
 from time import sleep
 from sparks.modules import dbmods # required to emit events from the mode parser
 
+# Helper functions
+def ircStrCmp( irc, str1, str2 ):
+	casemap = 'rfc1459'
+	if hasattr( irc, 'isupport' ):
+		if 'CASEMAPPING' in irc.isupport:
+			casemap = irc.isupport[ 'CASEMAPPING' ]
+
+	''' # To add more supported casemaps:
+		if casemap == 'blah':
+			doStuff
+		elif casemap == 'blah2':
+			doOtherStuff
+		else
+			print "Error: Unknown casemap %s used on network %s; defaulting to rfc1459" % ( irc.isupport['CASEMAPPING'], irc.name )
+			casemap = rfc1459
+	'''
+	if casemap == 'rfc1459':
+		'''
+			"Because of IRC's scandanavian origin, the characters {}| are considered to be the lower case equivalents
+			 of the characters []\, respectively. This is a critical issue when determining the equivalence of two nicknames."
+				 -- rfc1459
+		'''
+		str1 = str1.replace( '[', '{' )
+		str1 = str1.replace( ']', '}' )
+		str1 = str1.replace( '\\', '|' )
+		str2 = str2.replace( '[', '{' )
+		str2 = str2.replace( ']', '}' )
+		str2 = str2.replace( '\\', '|' )
+
+		str1 = str1.lower()
+		str2 = str2.lower()
+
+	if str1 == str2:
+		return True
+
+	return False
+
+def ircStrLower( irc, string ):
+	casemap = 'rfc1459'
+	if hasattr( irc, 'isupport' ):
+		if 'CASEMAPPING' in irc.isupport:
+			casemap = irc.isupport[ 'CASEMAPPING' ]
+
+	if casemap == 'rfc1459':
+		string = string.replace( '[', '{' )
+		string = string.replace( ']', '}' )
+		string = string.replace( '\\', '|' )
+		string = string.lower()
+
+	return string
+
+
+# directly related to IRC
 def tsr_001(irc, client, target, params):
 	# Nick Authentication
 	auth = irc.modconf['auth']
@@ -95,47 +148,12 @@ def sr_005(irc, client, target, params):
 	# } for isupport in params
 # } def sr_005
 
-
-def sr_353(irc, client, target, params):
-	# Create a nicklist for each channel
-	if not hasattr(irc, 'chanlists'):
-		irc.chanlists = {}
-
-	# Coded by _habnabit #python Freenode. Greatly appreciated!
-	ret = {}
-	ret2 = {}
-
-	for nick in params[3:]:
-		nick = nick.lstrip(':')
-		nick_modes = []
-
-		for e, char in enumerate(nick):
-			if char not in irc.statusmodes:
-				ret[nick[e:]] = nick_modes
-				break
-
-			nick_modes.append(irc.statusmodes[char])
-
-	for r in ret:
-		ret2[r] = ''.join(ret[r])
-
-	irc.chanlists[params[2]] = ret2
-
-def sr_part(irc, client, target, params):
-	irc.push("NAMES %s" % target)
-
-def sr_join(irc, client, target, params):
-	irc.push("NAMES %s" % target)
-
 def sr_mode(irc, client, target, params):
 	# Mode parser
 	# Sends out mode events for other modules to use
 	# - SnoFox
 
-	# First of all, channel mode or user mode?
-
 	if target[0] in irc.isupport['CHANTYPES']:
-		irc.push("NAMES %s" % target)
 		chmode = True 
 	else:
 		chmode = False
@@ -147,27 +165,23 @@ def sr_mode(irc, client, target, params):
 	# then later sends us a mode line that doesn't agree with our knowledge of modes
 	# That ... Should probably be fixed.
 	for char in params[0]:
-		# Are we adding or subtracting the mode?
 		if char == '+':
 			adding = True
 		elif char == '-':
 			adding = False
 		else:
 			param = None
+
 			if chmode:
-				# Check to see what kind of mode this is
 				if char in irc.typeemodes or char in irc.listmodes or char in irc.typebmodes or (char in irc.typecmodes and adding):
-					# These types of modes have params
-					# Launch events! Woo!
 					for n, mod in enumerate(dbmods):
 						if hasattr( mod, 'sr_chmode_%s' % char ):
 							cmd = getattr( mod, 'sr_chmode_%s' % char )
 							cmd( irc, client, target, adding, params[paramNum] )
+
 					paramNum += 1
 					continue
 				else:
-					# This is a letter, hopefully, or at least a mode.
-					# Fire off an event for it
 					for n, mod in enumerate(dbmods):
 						if hasattr( mod, 'sr_chmode_%s' % char ):
 							cmd = getattr( mod, 'sr_chmode_%s' % char )
@@ -183,8 +197,3 @@ def sr_mode(irc, client, target, params):
 						cmd( irc, client, target, adding, None )
 				
 
-
-
-
-def ca_chanlist(irc, client, channel, params):
-	irc.privmsg(channel, irc.chanlists[channel])
