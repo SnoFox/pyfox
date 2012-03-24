@@ -60,15 +60,16 @@ class User:
 			print "Error: Got duplicate join for %s in %s" % ( self.__nick, chan )
 
 	def setPrefix( self, chan, prefixes ):
-		try:
+		get = self.__channels.get( chan )
+		if get != None:
 			self.__channels[chan] = prefixes
-		except KeyError:
+		else:
 			print "Error: Got info for user %s in channel %s, but we don't know about that channel" % ( self.__nick, chan )
 
 	def delChan( self, chan ):
-		try:
+		if self.__channels.get( chan ) != None:
 			del self.__channels[chan]
-		except KeyError:
+		else:
 			print "Error: Got a part/kick for user %s in chan %s, but they weren't there in the first place" % ( self.__nick, chan )
 
 	def getNick( self ):
@@ -84,10 +85,7 @@ class User:
 		return self.__gecos
 
 	def getPrefix( self, chan ):
-		try:
-			return self.__channels[chan]
-		except NameError:
-			return None
+		return self.__channels.get( chan )
 
 	def getChans( self ):
 		return self.__channels
